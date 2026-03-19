@@ -1,0 +1,143 @@
+{
+  "projectType": "saas",
+  "projectName": "OWASP Nest",
+  "projectDescription": "A comprehensive, community-first platform serving as the gateway to OWASP — enabling contributors to discover projects, find contribution opportunities, engage via Slack, and explore chapters and mentorship programs.",
+  "theme": "palm",
+  "primaryColor": "#b4cb04",
+  "lightColor": "#f6f6f6",
+  "darkColor": null,
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Overview",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "architecture"
+            ]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/projects",
+              "features/chapters",
+              "features/contribute",
+              "features/mentorship",
+              "features/ai-insights",
+              "features/search"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Backend",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "backend/overview",
+              "backend/local-setup",
+              "backend/environment-variables"
+            ]
+          },
+          {
+            "group": "Architecture",
+            "pages": [
+              "backend/apps",
+              "backend/database",
+              "backend/task-queue",
+              "backend/caching"
+            ]
+          },
+          {
+            "group": "APIs",
+            "pages": [
+              "backend/api/overview",
+              "backend/api/rest",
+              "backend/api/graphql"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Frontend",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "frontend/overview",
+              "frontend/local-setup",
+              "frontend/environment-variables"
+            ]
+          },
+          {
+            "group": "Architecture",
+            "pages": [
+              "frontend/pages",
+              "frontend/components",
+              "frontend/graphql-codegen"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "NestBot",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "nestbot/overview",
+              "nestbot/commands",
+              "nestbot/events"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Contributing",
+        "groups": [
+          {
+            "group": "Get Involved",
+            "pages": [
+              "contributing/guidelines",
+              "contributing/local-development",
+              "contributing/testing",
+              "contributing/code-of-conduct"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "OWASP project discovery and advanced search via Algolia",
+    "Contribution opportunity finder aligned with contributor interests",
+    "OWASP Chapters proximity map for local community engagement",
+    "AI-generated project insights and actionable issue summaries",
+    "NestBot Slack integration for commands, events, and messaging",
+    "Google Summer of Code (GSoC) mentorship program support",
+    "Dual API: REST (v0 via Django Ninja) and GraphQL (via Strawberry)",
+    "GitHub integration for real-time project and issue data synchronization"
+  ],
+  "publicApiSurface": [
+    "GET /api/v0/chapters",
+    "GET /api/v0/committees",
+    "GET /api/v0/events",
+    "GET /api/v0/issues",
+    "GET /api/v0/labels",
+    "GET /api/v0/members",
+    "GET /api/v0/milestones",
+    "GET /api/v0/organizations",
+    "GET /api/v0/projects",
+    "GET /api/v0/releases",
+    "GET /api/v0/repositories",
+    "GET /api/v0/snapshots",
+    "GET /api/v0/sponsors",
+    "POST /api/v0/structured-search",
+    "POST /graphql/ (GraphQL endpoint)",
+    "/api/v0/openapi.json (OpenAPI schema)"
+  ]
+}
