@@ -1,0 +1,63 @@
+---
+title: "Chapters"
+description: "Find OWASP chapters worldwide using the interactive map and proximity search."
+---
+
+The Chapters page helps you discover OWASP local chapters around the world. You can search by name, filter by country, and use the interactive map to find chapters near your location.
+
+## Browsing chapters
+
+Navigate to **Chapters** from the top navigation bar or visit [nest.owasp.org/chapters](https://nest.owasp.org/chapters) directly.
+
+The page opens with an interactive map showing the geographic locations of all active OWASP chapters. Below the map, chapter cards are listed with the following information:
+
+- Chapter name and AI-generated summary
+- Social and web links (website, Meetup, LinkedIn, etc.)
+- Last updated date
+- Top contributors
+- A **View Details** button linking to the chapter detail page
+
+## Interactive map
+
+The map renders all chapters as location markers. It supports:
+
+- **Zoom and pan** — Navigate to any region of the world.
+- **Location sharing** — Allow the browser to use your location so the map centers on your area, making it easy to spot nearby chapters.
+- **Local chapter highlight** — When location sharing is enabled, chapters within your region are visually highlighted.
+
+The map data updates dynamically when you apply a search query or country filter, showing only the chapters that match your current selection.
+
+## Search and filtering
+
+Use the search bar to filter chapters by name or keywords. You can also use the **Country** dropdown to restrict results to chapters in a specific country.
+
+| Filter | Description |
+|---|---|
+| Search query | Matches chapter name and description text via Algolia |
+| Country filter | Restricts results to a single country using a facet filter on the `idx_country` field |
+
+Sort options allow you to reorder the chapter list by name or recent activity.
+
+<Tip>
+  If you enable location sharing, the map automatically focuses on your region so you can quickly identify the nearest chapter without typing your location.
+</Tip>
+
+## Chapter detail page
+
+Click **View Details** on any chapter card to open the full chapter page at `/chapters/<key>`.
+
+The detail page includes:
+
+- Full chapter description and history
+- Meeting information and upcoming events
+- Links to the chapter's social accounts and official OWASP page
+- A map showing the chapter's specific location
+- Chapter contributors and leadership information
+
+## Data source
+
+Chapter data is sourced from the OWASP GitHub organization. The backend ingests chapter metadata from OWASP's chapter repositories on a scheduled basis and indexes the records in Algolia. Geographic coordinates are resolved and stored so the map can render accurate pin locations.
+
+<Info>
+  Chapter information reflects the data available in the OWASP GitHub organization. If you notice outdated information, updates should be made in the relevant OWASP chapter repository, and they will be synchronized on the next data ingestion run.
+</Info>

@@ -1,0 +1,92 @@
+---
+title: "Pages"
+description: "All pages in the OWASP Nest frontend, organized by route using the Next.js App Router."
+---
+
+The frontend uses the [Next.js App Router](https://nextjs.org/docs/app). Each directory under `src/app/` maps to a URL segment. The root `layout.tsx` wraps every page with the global `Header`, `Footer`, breadcrumbs, and provider context.
+
+## Page routes
+
+<CardGroup cols={2}>
+  <Card title="/ — Home" icon="house">
+    The landing page. Displays upcoming OWASP events, a worldwide chapter map, recent chapters and projects, top contributors, recent issues, milestones, pull requests, releases, news posts, and aggregate community statistics.
+  </Card>
+  <Card title="/projects — Projects" icon="folder">
+    Searchable catalog of all OWASP projects. Supports filtering by type, health status, and other attributes. Backed by Algolia for fast full-text search.
+  </Card>
+  <Card title="/projects/[projectKey] — Project detail" icon="folder-open">
+    Detail page for a single OWASP project. Shows project metadata, health metrics, repositories, contributors, recent issues, pull requests, and releases.
+  </Card>
+  <Card title="/projects/dashboard — Projects dashboard" icon="chart-bar">
+    Aggregated dashboard view across all projects, showing health statistics, contribution trends, and project type breakdowns.
+  </Card>
+  <Card title="/chapters — Chapters" icon="map">
+    Interactive world map of OWASP local chapters using Leaflet and OpenStreetMap. Includes chapter search and location-based filtering.
+  </Card>
+  <Card title="/chapters/[chapterKey] — Chapter detail" icon="map-pin">
+    Detail page for a single OWASP chapter. Displays chapter description, leaders, location, and upcoming events.
+  </Card>
+  <Card title="/contribute — Contribute" icon="code">
+    Lists open contribution opportunities across OWASP projects — good first issues, help-wanted issues, and mentorship openings.
+  </Card>
+  <Card title="/mentorship — Mentorship" icon="graduation-cap">
+    Displays OWASP mentorship programs. Shows available programs, mentors, and open mentee issues.
+  </Card>
+  <Card title="/community — Community" icon="users">
+    Overview of the OWASP community including Slack, mailing lists, and other participation channels.
+  </Card>
+  <Card title="/members — Members" icon="user">
+    Browseable list of OWASP members with search and filtering.
+  </Card>
+  <Card title="/organizations — Organizations" icon="building">
+    Lists organizations affiliated with OWASP, with details on their projects and contributions.
+  </Card>
+  <Card title="/committees — Committees" icon="clipboard-list">
+    Overview of active OWASP committees and their focus areas.
+  </Card>
+  <Card title="/board — Board" icon="award">
+    Information about the OWASP Board of Directors.
+  </Card>
+  <Card title="/about — About" icon="info">
+    About page for OWASP Nest, including its mission and links to resources.
+  </Card>
+  <Card title="/settings — Settings" icon="settings">
+    User account settings, including API key management.
+  </Card>
+  <Card title="/my — My dashboard" icon="layout-dashboard">
+    Authenticated user dashboard showing personal activity, contributions, and saved items.
+  </Card>
+  <Card title="/auth — Authentication" icon="lock">
+    Handles GitHub OAuth sign-in and sign-out flows via NextAuth.js.
+  </Card>
+</CardGroup>
+
+## Special files
+
+The App Router also includes these special files at the `src/app/` root:
+
+| File | Purpose |
+| --- | --- |
+| `layout.tsx` | Root layout: wraps all pages with `Header`, `Footer`, breadcrumbs, and context providers |
+| `page.tsx` | Home page (`/`) |
+| `globals.css` | Global CSS styles |
+| `not-found.tsx` | Custom 404 page |
+| `global-error.tsx` | Global error boundary for unhandled errors |
+| `api/` | Next.js API routes (server-side endpoints, including NextAuth callbacks) |
+
+## Layouts and providers
+
+The root layout (`src/app/layout.tsx`) applies the following to every page:
+
+- **Geist** and **Geist Mono** fonts via `next/font/google`
+- The `Providers` wrapper (Apollo Client, HeroUI, theme, PostHog)
+- `BreadcrumbRoot` context for dynamic breadcrumbs
+- `Header` with optional GitHub auth
+- `BreadCrumbsWrapper` for per-page breadcrumb display
+- `Footer`
+- `ScrollToTop` and `AutoScrollToTop` helpers
+- Google Analytics via `@next/third-parties` (when `NEXT_PUBLIC_GTM_ID` is set)
+
+<Note>
+The root layout sets `export const dynamic = 'force-dynamic'` to ensure fresh data on every request.
+</Note>

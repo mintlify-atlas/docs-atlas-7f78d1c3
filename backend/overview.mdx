@@ -1,0 +1,69 @@
+---
+title: "Backend overview"
+description: "An introduction to the Django-based backend architecture powering OWASP Nest."
+---
+
+The OWASP Nest backend is a Python API server built with [Django 6.x](https://www.djangoproject.com/). It exposes two APIs — a public REST API and an internal GraphQL API — and integrates with PostgreSQL, Redis, and Algolia to serve the Nest frontend and third-party SDK consumers.
+
+## Tech stack
+
+<CardGroup cols={2}>
+  <Card title="Django 6.x" icon="layer-group">
+    Core web framework. Handles routing, ORM, admin, migrations, and middleware.
+  </Card>
+  <Card title="Django Ninja" icon="bolt">
+    REST framework for the public v0 API. Auto-generates an OpenAPI schema at `/api/v0/openapi.json`.
+  </Card>
+  <Card title="Strawberry GraphQL" icon="circle-nodes">
+    GraphQL framework for the internal API consumed by the Next.js frontend.
+  </Card>
+  <Card title="PostgreSQL" icon="database">
+    Primary relational database. Uses pgvector for AI embedding storage.
+  </Card>
+  <Card title="Redis" icon="server">
+    Provides API response caching via `django-redis` and powers the Django RQ task queue.
+  </Card>
+  <Card title="Algolia" icon="magnifying-glass">
+    Full-text search index for projects, chapters, and other OWASP entities.
+  </Card>
+</CardGroup>
+
+## Directory structure
+
+```
+backend/
+├── apps/                  # All Django applications
+│   ├── ai/                # AI agent (LangGraph, LangChain, OpenAI)
+│   ├── api/               # REST v0 and GraphQL API definitions
+│   ├── common/            # Shared utilities and middleware
+│   ├── core/              # Core models and base classes
+│   ├── github/            # GitHub integration (orgs, repos, issues)
+│   ├── mentorship/        # Mentorship program models
+│   ├── nest/              # Nest-specific models (users, API keys)
+│   ├── owasp/             # OWASP project and chapter data
+│   ├── sitemap/           # XML sitemap generation
+│   └── slack/             # NestBot Slack integration
+├── data/                  # Database dumps and backup files
+├── settings/              # Django configuration files (base, local, production, …)
+├── tests/                 # Automated tests
+├── manage.py
+├── pyproject.toml         # Poetry dependencies and tool configuration
+└── .env.example           # Environment variable template
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Local setup" icon="play" href="/backend/local-setup">
+    Run the backend locally using Docker Compose.
+  </Card>
+  <Card title="Environment variables" icon="sliders" href="/backend/environment-variables">
+    Reference for all required and optional environment variables.
+  </Card>
+  <Card title="Django apps" icon="grid-2x2" href="/backend/apps">
+    Detailed description of each Django application.
+  </Card>
+  <Card title="API overview" icon="plug" href="/backend/api/overview">
+    REST and GraphQL API entry points.
+  </Card>
+</CardGroup>

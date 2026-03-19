@@ -1,0 +1,97 @@
+---
+title: "Search"
+description: "Full-text search across OWASP projects, chapters, and issues powered by Algolia."
+---
+
+OWASP Nest uses [Algolia](https://www.algolia.com) to power fast, full-text search across all major content types. Search is available on the Projects, Chapters, and Contribute pages, and is also accessible via the REST API.
+
+## How search works
+
+The backend indexes OWASP data into Algolia on a scheduled basis. Each content type has its own Algolia index:
+
+| Index | Content |
+|---|---|
+| `projects` | OWASP projects with names, summaries, tags, levels, and GitHub statistics |
+| `chapters` | OWASP chapters with names, summaries, countries, and geographic coordinates |
+| `issues` | Open GitHub issues with titles, summaries, labels, and project references |
+
+The Next.js frontend queries these indices directly using the Algolia search client, using the `useSearchPage` hook to manage queries, pagination, and sorting state.
+
+## Searching from the UI
+
+Each list page (Projects, Chapters, Contribute) has a search bar that triggers a live Algolia query as you type. Results update instantly without a full page reload.
+
+### Projects search
+
+On the **Projects** page you can:
+
+- Search by project name, keywords in the description, or topic tags.
+- Sort by relevance, stars, forks, contributors, or activity.
+- Filter to show only projects with a specific activity level.
+
+### Chapters search
+
+On the **Chapters** page you can:
+
+- Search by chapter name or description keywords.
+- Filter by **country** using the country dropdown, which applies an Algolia facet filter on the `idx_country` attribute.
+- Sort by name or recent activity.
+
+### Issues search
+
+On the **Contribute** page you can:
+
+- Search by issue title, description, label names, or project name.
+- Results include issues from all active OWASP projects.
+
+## REST API search endpoint
+
+Nest exposes a structured search endpoint via the REST API at `/api/v0/search/` for programmatic access.
+
+```bash
+GET https://nest.owasp.org/api/v0/search/?q=zap&type=projects
+```
+
+The endpoint accepts the following query parameters:
+
+| Parameter | Description |
+|---|---|
+| `q` | Search query string |
+| `type` | Content type to search: `projects`, `chapters`, or `issues` |
+| `page` | Page number (1-indexed) |
+| `hitsPerPage` | Number of results per page |
+
+The response mirrors the Algolia response format with `hits`, `nbHits`, `page`, and `nbPages` fields.
+
+<Note>
+  The REST API search endpoint proxies the query to Algolia server-side, so you do not need an Algolia API key to use it. Rate limits apply per the standard Nest API terms.
+</Note>
+
+## Facets and filters
+
+Algolia facet filtering is used for structured filtering that goes beyond text matching:
+
+- **Country filter** on the Chapters page uses `idx_country` as a facet attribute.
+- **Level filter** on the Projects page can filter by `idx_level` (Flagship, Production, Lab, Incubator).
+
+Facet values are fetched via GraphQL (`GetChapterCountriesDocument`) so that the UI can populate filter dropdowns with only the values that exist in the current data set.
+
+## Algolia configuration
+
+Search requires Algolia credentials in the backend environment:
+
+```plaintext
+DJANGO_ALGOLIA_APPLICATION_ID=<your-algolia-app-id>
+DJANGO_ALGOLIA_WRITE_API_KEY=<your-algolia-write-api-key>
+```
+
+The frontend uses a read-only search API key configured separately:
+
+```plaintext
+NEXT_PUBLIC_ALGOLIA_APP_ID=<your-algolia-app-id>
+NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY=<your-algolia-search-api-key>
+```
+
+<Tip>
+  During local development, you need your own free Algolia account with an app and indices set up. Follow the [local setup guide](/contributing/local-development) for step-by-step instructions on configuring Algolia for development.
+</Tip>

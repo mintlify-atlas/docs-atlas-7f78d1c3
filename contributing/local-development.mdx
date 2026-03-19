@@ -1,0 +1,240 @@
+---
+title: "Local development"
+description: "Set up a fully functional OWASP Nest development environment on your machine."
+---
+
+Nest uses Docker for both development and production, so the setup is consistent across operating systems. Follow the steps below to get the full stack running locally.
+
+## Prerequisites
+
+Install the following tools before you begin:
+
+<CardGroup cols={2}>
+  <Card title="Docker" icon="docker" href="https://docs.docker.com/engine/install/">
+    Required to run the Nest containers. Docker Desktop is recommended on macOS and Windows.
+  </Card>
+  <Card title="pre-commit" icon="check" href="https://pre-commit.com/#install">
+    Runs linters and formatters automatically before each commit.
+  </Card>
+  <Card title="Terraform" icon="cloud" href="https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli">
+    Required for infrastructure-as-code tasks.
+  </Card>
+  <Card title="tflint" icon="magnifying-glass" href="https://github.com/terraform-linters/tflint">
+    Linter for Terraform files.
+  </Card>
+</CardGroup>
+
+### Windows notes
+
+<Warning>
+On Windows, you **must** use WSL (Windows Subsystem for Linux). PowerShell is not supported and issues encountered in PowerShell will not be accepted as bugs.
+</Warning>
+
+- Install [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) and enter the Linux environment with `wsl` before running any Nest commands.
+- Enable WSL integration in Docker Desktop under **Resources → WSL integration**.
+- Clone the repository inside WSL, not under `/mnt/c` (the Windows C: drive). Running from `/mnt/c` causes significant performance degradation and Docker permission issues.
+
+## Setup
+
+<Steps>
+  <Step title="Fork and clone the repository">
+    Fork the repository on GitHub, then clone your fork:
+
+    ```bash
+    git clone https://github.com/<your-account>/Nest.git
+    cd Nest
+    ```
+  </Step>
+
+  <Step title="Create environment files">
+    Copy the example environment files for both backend and frontend:
+
+    ```bash
+    cp backend/.env.example backend/.env
+    cp frontend/.env.example frontend/.env
+    ```
+
+    <Warning>
+    Save both `.env` files in **UTF-8 format without BOM**. BOM-encoded files cause "Unexpected character" errors during Docker image builds and application startup.
+    </Warning>
+
+    Open `backend/.env` and set the Django configuration to local mode:
+
+    ```plaintext
+    DJANGO_CONFIGURATION=Local
+    ```
+  </Step>
+
+  <Step title="Configure Algolia">
+    Nest uses [Algolia](https://www.algolia.com/) for search. Create a free account, then add your application credentials to `backend/.env`:
+
+    ```plaintext
+    DJANGO_ALGOLIA_APPLICATION_ID=<your-algolia-application-id>
+    DJANGO_ALGOLIA_WRITE_API_KEY=<your-algolia-write-api-key>
+    ```
+
+    The write API key must have `addObject` permission.
+  </Step>
+
+  <Step title="Start the application">
+    From the project root directory (not `backend/` or `frontend/`), run:
+
+    ```bash
+    make run
+    ```
+
+    Leave this terminal running. The application is ready when `http://localhost:8000/api/v0` responds. Open a second terminal for subsequent commands.
+  </Step>
+
+  <Step title="Load initial data">
+    In a new terminal, populate the database from fixtures (requires `gzip`):
+
+    ```bash
+    make load-data
+    ```
+  </Step>
+
+  <Step title="Index data">
+    Index the loaded data into Algolia:
+
+    ```bash
+    make index-data
+    ```
+  </Step>
+
+  <Step title="Verify the setup">
+    Check that the following endpoints are responding:
+
+    | Endpoint | URL |
+    |---|---|
+    | REST API | `http://localhost:8000/api/v0/` |
+    | GraphQL | `http://localhost:8000/graphql/` |
+    | Frontend | `http://localhost:3000` |
+  </Step>
+</Steps>
+
+## Environment variable overview
+
+Full descriptions of all environment variables are in the backend and frontend READMEs:
+
+- `backend/README.md` — Django settings, Algolia keys, Slack tokens, GitHub token, and more.
+- `frontend/README.md` — Next.js settings, NextAuth config, and Algolia read key.
+
+Restart the application with `make run` after changing any `.env` file.
+
+## Key Makefile commands
+
+Run `make help` to see all available commands. The most commonly used ones are:
+
+| Command | Description |
+|---|---|
+| `make run` | Start all containers |
+| `make check` | Run all linters and static analysis |
+| `make check-test` | Run checks and tests |
+| `make test` | Run all tests |
+| `make load-data` | Load database fixtures |
+| `make index-data` | Index data into Algolia |
+| `make sync-data` | Sync data from GitHub |
+| `make create-superuser` | Create a Django superuser |
+| `make security-scan` | Run Semgrep and Trivy scans |
+
+## Optional setup
+
+### GitHub OAuth
+
+To enable the **Sign in with GitHub** feature locally:
+
+1. Go to [GitHub Developer Settings → OAuth Apps](https://github.com/settings/developers) and click **New OAuth App**.
+2. Set the callback URL to `http://localhost:3000/api/auth/callback/github`.
+3. Copy the **Client ID** and generate a **Client Secret**.
+4. Generate a `NEXTAUTH_SECRET`:
+
+   ```bash
+   openssl rand -base64 32
+   ```
+
+5. Add the values to `frontend/.env`:
+
+   ```plaintext
+   NEXTAUTH_SECRET=<output-from-openssl>
+   NEXT_SERVER_GITHUB_CLIENT_ID=<your-github-client-id>
+   NEXT_SERVER_GITHUB_CLIENT_SECRET=<your-github-client-secret>
+   ```
+
+### NestBot development
+
+<Warning>
+Never install your development Slack app in the OWASP Slack workspace. Always create and use a separate workspace.
+</Warning>
+
+To run NestBot locally you need a public HTTPS endpoint. Use [ngrok](https://ngrok.com/) with a static domain:
+
+<Steps>
+  <Step title="Configure ngrok">
+    Create a free ngrok account, get an auth token, and create a static domain at [ngrok domains](https://dashboard.ngrok.com/domains). Then configure ngrok:
+
+    ```bash
+    ngrok config edit
+    ```
+
+    ```yaml
+    agent:
+      authtoken: <your-auth-token>
+    tunnels:
+      NestBot:
+        addr: 8000
+        proto: http
+        hostname: <your-static-domain>
+    ```
+
+    Start the tunnel:
+
+    ```bash
+    ngrok start NestBot
+    ```
+  </Step>
+
+  <Step title="Add Slack credentials to backend/.env">
+    ```plaintext
+    DJANGO_SLACK_BOT_TOKEN=<bot-user-oauth-token>
+    DJANGO_SLACK_SIGNING_SECRET=<signing-secret>
+    ```
+
+    Find these values in your Slack app settings under **Settings → Install App** and **Settings → Basic Information → App Credentials**.
+  </Step>
+
+  <Step title="Configure your Slack app">
+    Copy the contents of `backend/apps/slack/MANIFEST.yaml` and paste it into your Slack app under **Features → App Manifest**. Replace the endpoint URLs with your ngrok static domain. Reinstall the app from **Settings → Install App**.
+  </Step>
+</Steps>
+
+### Access role-gated features
+
+Some UI sections require specific backend roles. To grant yourself access during development:
+
+<Tabs>
+  <Tab title="Project Health Dashboard">
+    The dashboard is visible only to users with the `is_owasp_staff` flag.
+
+    1. Create a superuser with `make create-superuser`.
+    2. Open Django Admin at `http://localhost:8000/a` and log in.
+    3. Navigate to **GitHub Users** and open your user record.
+    4. Tick the `is_owasp_staff` checkbox and save.
+    5. Clear your browser cookies for `localhost:3000` and sign in again.
+
+    The dashboard will appear in your user menu, or navigate directly to `http://localhost:3000/projects/dashboard`.
+  </Tab>
+  <Tab title="Mentorship Portal">
+    The **My Mentorship** menu item appears for Project Leaders and Mentors.
+
+    To grant access as a Project Leader:
+    1. Open Django Admin → **OWASP → Projects**.
+    2. Open or create a project and add your GitHub username to `leaders_raw`.
+    3. Save, then clear cookies and sign in again.
+
+    To grant access as a Mentor:
+    1. Open Django Admin → **Mentorship → Mentors**.
+    2. Click **Add Mentor** and select your GitHub user.
+    3. Clear cookies and sign in again.
+  </Tab>
+</Tabs>

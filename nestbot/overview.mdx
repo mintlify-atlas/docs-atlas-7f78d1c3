@@ -1,0 +1,76 @@
+---
+title: "NestBot overview"
+description: "Learn what NestBot is, how it integrates with Django, and how to add it to a Slack workspace."
+---
+
+NestBot is the official Slack bot for OWASP Nest. It is built on [Slack Bolt for Python](https://docs.slack.dev/tools/bolt-python/getting-started) and runs as a standard Django app inside the Nest backend, giving it full access to the Django ORM, settings, and async job queues.
+
+## What NestBot does
+
+NestBot gives OWASP community members a conversational interface directly inside Slack. Members can search projects, find nearby chapters, explore Google Summer of Code opportunities, look up leaders, get contribution ideas, and ask AI-powered questions — all without leaving their Slack workspace.
+
+<CardGroup cols={2}>
+  <Card title="Slash commands" icon="terminal" href="/nestbot/commands">
+    Twenty slash commands covering projects, chapters, GSoC, jobs, events, and more.
+  </Card>
+  <Card title="Event handlers" icon="bolt" href="/nestbot/events">
+    Responds to workspace events such as new members joining, app mentions, and messages.
+  </Card>
+  <Card title="AI assistant" icon="sparkles">
+    Answers OWASP-related questions in channels where the assistant is enabled.
+  </Card>
+  <Card title="Home tab" icon="house">
+    A personalised app home rendered with Slack Block Kit when a user opens the bot.
+  </Card>
+</CardGroup>
+
+## Adding NestBot to your workspace
+
+<Warning>
+Never install your development Slack application in the OWASP Slack workspace. Doing so interferes with production functionality and triggers unnecessary notifications to Slack admins. Always use a separate workspace during development.
+</Warning>
+
+For OWASP community members, NestBot is already available in the [OWASP Slack workspace](https://owasp.slack.com). Open any channel and type `/projects` or any other slash command to start using it.
+
+To install NestBot in your own workspace for development purposes, follow the [NestBot development setup](/contributing/local-development#nestbot-development) instructions.
+
+## Architecture
+
+NestBot is a Django app located at `backend/apps/slack/`. It is registered in `INSTALLED_APPS` alongside every other Nest Django app. At startup, Django initialises `SlackConfig`, which creates the Slack Bolt `App` instance and registers all command and event handlers.
+
+Requests from Slack arrive at two endpoints served by Django:
+
+| Endpoint | Purpose |
+|---|---|
+| `/integrations/slack/commands/` | Slash command payloads |
+| `/integrations/slack/events/` | Event subscription payloads |
+| `/integrations/slack/interactivity/` | Interactive component payloads (button clicks, modals) |
+
+Slack Bolt dispatches each incoming payload to the matching handler. Handlers render [Jinja2](https://jinja.palletsprojects.com/) templates that produce Slack Block Kit JSON, which is sent back to Slack via `slack_sdk.WebClient`.
+
+## Directory structure
+
+```
+backend/apps/slack/
+├── actions/          # Handlers for interactive components (button clicks, modals)
+├── commands/         # Slash command handlers (one file per command)
+├── events/           # Event handlers (app_mention, team_join, etc.)
+│   └── member_joined_channel/   # Channel-specific join handlers
+├── models/           # Django models: Workspace, Conversation, Member, Message
+└── templates/        # Slack Block Kit Jinja2 templates
+    ├── commands/     # One .jinja file per slash command
+    └── events/       # One .jinja file per event handler
+```
+
+Each command or event is a Python class that inherits from `CommandBase` or `EventBase`. These base classes handle template loading, block rendering, error logging, and Slack API calls, so individual handlers only need to override `get_context()` or `render_blocks()` when they require custom logic.
+
+## Tech stack
+
+| Component | Technology |
+|---|---|
+| Bot framework | Slack Bolt for Python |
+| Slack API client | `slack_sdk` |
+| Web framework | Django |
+| Template engine | Jinja2 |
+| Message format | Slack Block Kit JSON |
+| Async jobs | Django RQ (Redis Queue) |

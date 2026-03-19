@@ -1,0 +1,147 @@
+---
+title: "Components"
+description: "An overview of the reusable UI components in the OWASP Nest frontend."
+---
+
+All shared UI components live in `src/components/`. There are over 80 components covering layout, data display, navigation, forms, charts, maps, and loading states. Components are built with [HeroUI](https://www.heroui.com/) and styled with [TailwindCSS 4.x](https://tailwindcss.com/).
+
+## Component categories
+
+### Layout and navigation
+
+| Component | Description |
+| --- | --- |
+| `Header.tsx` | Top navigation bar with links, search, user menu, and dark mode toggle |
+| `Footer.tsx` | Site-wide footer |
+| `PageLayout.tsx` | Consistent page wrapper with heading and content area |
+| `SearchPageLayout.tsx` | Layout for search result pages with sidebar filters |
+| `BreadCrumbs.tsx` / `BreadCrumbsWrapper.tsx` | Dynamic breadcrumb navigation driven by `BreadcrumbContext` |
+| `NavButton.tsx` / `NavDropDown.tsx` | Header navigation elements |
+| `ScrollToTop.tsx` / `AutoScrollToTop.tsx` | Scroll-to-top button and auto-scroll-on-navigate behaviour |
+
+### Search and filtering
+
+| Component | Description |
+| --- | --- |
+| `GlobalSearch.tsx` | Full-site search powered by Algolia |
+| `Search.tsx` | Inline search input |
+| `SortBy.tsx` | Sorting control for list pages |
+| `CountryFilter.tsx` | Filter dropdown scoped to countries |
+| `Pagination.tsx` | Page navigation for paginated lists |
+| `ShowMoreButton.tsx` | Reveals additional list items inline |
+
+### Cards and lists
+
+| Component | Description |
+| --- | --- |
+| `Card.tsx` | Base card container |
+| `SecondaryCard.tsx` | Section card with optional icon and title |
+| `ModuleCard.tsx` / `SingleModuleCard.tsx` | Cards for mentorship modules |
+| `DashboardCard.tsx` | Summary card used on dashboard pages |
+| `MetricsCard.tsx` | Displays a single health or stats metric |
+| `SnapshotCard.tsx` | Point-in-time snapshot of entity stats |
+| `ProgramCard.tsx` | Card for a mentorship program |
+| `RepositoryCard.tsx` | Card for a GitHub repository |
+| `SponsorCard.tsx` | Card for an OWASP sponsor |
+| `UserCard.tsx` | Card for an OWASP member |
+| `ItemCardList.tsx` | Renders a list of cards from a data array |
+| `CardDetailsPage.tsx` | Full-width detail layout for a single entity |
+
+### Data display
+
+| Component | Description |
+| --- | --- |
+| `ContributorsList.tsx` | Renders a list of contributors with avatars |
+| `ContributorAvatar.tsx` | Single contributor avatar with tooltip |
+| `LeadersList.tsx` / `Leaders.tsx` | Displays chapter or project leaders |
+| `IssuesTable.tsx` | Table of GitHub issues |
+| `RecentIssues.tsx` | Feed of recent open issues |
+| `RecentPullRequests.tsx` | Feed of recent pull requests |
+| `RecentReleases.tsx` / `Release.tsx` | Feed of recent repository releases |
+| `Milestones.tsx` | Displays GitHub milestone progress |
+| `InfoBlock.tsx` / `InfoItem.tsx` | Labeled key-value info rows |
+| `Badges.tsx` / `StatusBadge.tsx` | Status and label badges |
+| `LabelList.tsx` | Horizontal list of label chips |
+| `TruncatedText.tsx` | Text clamped to a max line count with expansion |
+| `ToggleableList.tsx` | Expandable/collapsible list |
+| `MarkdownWrapper.tsx` | Renders sanitized Markdown content |
+| `AnchorTitle.tsx` | Section heading with a self-link anchor |
+
+### Charts and metrics
+
+| Component | Description |
+| --- | --- |
+| `BarChart.tsx` | Bar chart using ApexCharts |
+| `LineChart.tsx` | Line chart using ApexCharts |
+| `DonutBarChart.tsx` | Donut chart using ApexCharts |
+| `ContributionHeatmap.tsx` | GitHub-style contribution activity heatmap |
+| `ContributionStats.tsx` | Summary statistics for contributions |
+| `HealthMetrics.tsx` | Project health score display |
+| `MetricsScoreCircle.tsx` | Circular score indicator |
+| `MetricsPDFButton.tsx` | Exports metrics as a PDF |
+
+### Map
+
+| Component | Description |
+| --- | --- |
+| `ChapterMap.tsx` | Leaflet map of worldwide OWASP chapters with marker clustering |
+| `ChapterMapWrapper.tsx` | Client-side wrapper that handles dynamic import of the map (required because Leaflet requires a browser environment) |
+
+### Skeletons and loading
+
+All skeleton components live in `src/components/skeletons/`. They mirror the layout of their corresponding pages and display while data is loading.
+
+| Component | Description |
+| --- | --- |
+| `Card.tsx` | Generic card skeleton |
+| `AboutSkeleton.tsx` | Skeleton for the About page |
+| `ApiKeySkeleton.tsx` | Skeleton for the API key settings section |
+| `MemberDetailsPageSkeleton.tsx` | Skeleton for a member detail page |
+| `OrganizationDetailsPageSkeleton.tsx` | Skeleton for an organization detail page |
+| `SnapshotSkeleton.tsx` | Skeleton for snapshot cards |
+| `UserCard.tsx` | Skeleton for user cards |
+| `sharedSkeletons.tsx` | Common skeleton building blocks |
+
+### Modals and overlays
+
+| Component | Description |
+| --- | --- |
+| `Modal.tsx` | General-purpose modal dialog built on HeroUI |
+| `EntityActions.tsx` | Action menu for entity management (admin) |
+
+### Authentication and user
+
+| Component | Description |
+| --- | --- |
+| `LoginPageContent.tsx` | Sign-in page content with GitHub OAuth button |
+| `UserMenu.tsx` | Authenticated user dropdown menu in the header |
+| `ModeToggle.tsx` | Light/dark mode switcher |
+
+### Miscellaneous
+
+| Component | Description |
+| --- | --- |
+| `CalendarButton.tsx` | Generates and downloads an `.ics` calendar file for an event |
+| `LogoCarousel.tsx` | Animated sponsor logo scroll |
+| `FontLoaderWrapper.tsx` | Ensures custom fonts are loaded before rendering |
+| `StructuredDataScript.tsx` | Injects JSON-LD structured data into the `<head>` |
+| `DisplayIcon.tsx` | Renders a named icon from `react-icons` |
+| `ActionButton.tsx` | Styled call-to-action button |
+
+## Styling
+
+Components use [TailwindCSS 4.x](https://tailwindcss.com/) utility classes. The Tailwind configuration (`tailwind.config.mjs`) extends the default theme with OWASP brand colors (e.g., `owasp-blue`), CSS variable-based color tokens, and the HeroUI plugin for component theming. Dark mode is enabled via the `class` strategy — the `ModeToggle` component toggles the `dark` class on the root element.
+
+## HeroUI
+
+[HeroUI](https://www.heroui.com/) provides the base design system. The following HeroUI packages are used directly:
+
+- `@heroui/button`, `@heroui/modal`, `@heroui/select`, `@heroui/autocomplete` — core interactive components
+- `@heroui/skeleton` — loading skeleton wrappers
+- `@heroui/tooltip` — contextual tooltips
+- `@heroui/toast` — toast notifications (via `addToast`)
+- `@heroui/react` — the full component bundle
+
+<Note>
+When building new components, prefer HeroUI primitives for interactive elements and TailwindCSS for layout and spacing. This keeps visual consistency across the app.
+</Note>

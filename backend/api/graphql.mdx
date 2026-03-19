@@ -1,0 +1,126 @@
+---
+title: "GraphQL API"
+description: "Reference for the Strawberry GraphQL API used internally by the OWASP Nest frontend."
+---
+
+The GraphQL API is the primary interface between the Next.js frontend and the Django backend. It is built with [Strawberry GraphQL](https://strawberry.rocks/) and the `strawberry-graphql-django` integration.
+
+## Endpoint
+
+```
+/graphql/
+```
+
+## GraphiQL playground
+
+When running with `DJANGO_CONFIGURATION=Local`, the GraphiQL interactive playground is available at `/graphql/`. It lets you browse the schema, write queries, and inspect results without any additional tooling.
+
+<Note>
+  Introspection is disabled in production environments to avoid schema disclosure. Use the local stack to explore the schema.
+</Note>
+
+## Schema structure
+
+The schema is defined in `backend/settings/graphql.py` and composed from query and mutation classes contributed by each Django app.
+
+### Query root
+
+| Source class | App | Description |
+|---|---|---|
+| `ApiKeyQueries` | `api` | API key management queries |
+| `GithubQuery` | `github` | GitHub organizations, repositories, issues |
+| `MentorshipQuery` | `mentorship` | Mentorship program queries |
+| `ModuleQuery` | `mentorship` | Mentorship module queries |
+| `OwaspQuery` | `owasp` | Projects, chapters, committees, events, snapshots, sponsors |
+| `ProgramQuery` | `mentorship` | Mentorship program queries |
+
+### Mutation root
+
+| Source class | App | Description |
+|---|---|---|
+| `ApiMutations` | `api` | API key create/revoke mutations |
+| `ModuleMutation` | `mentorship` | Mentorship module mutations |
+| `NestMutations` | `nest` | User-related mutations |
+| `ProgramMutation` | `mentorship` | Mentorship program mutations |
+
+## Schema extensions
+
+The following extensions are always active:
+
+| Extension | Purpose |
+|---|---|
+| `QueryDepthLimiter(max_depth=5)` | Prevents deeply nested query abuse |
+| `DjangoOptimizerExtension` | Automatically optimizes Django ORM queries to avoid N+1 issues |
+| `DisableIntrospection` | Enabled in production to hide the schema |
+
+## Example queries
+
+### List recent projects
+
+```graphql
+query RecentProjects {
+  recentProjects(limit: 8) {
+    key
+    name
+    level
+    type
+    description
+  }
+}
+```
+
+### Search projects by name
+
+```graphql
+query SearchProjects($query: String!) {
+  searchProjects(query: $query) {
+    key
+    name
+    level
+  }
+}
+```
+
+**Variables:**
+
+```json
+{
+  "query": "security"
+}
+```
+
+### Fetch a single project
+
+```graphql
+query GetProject($key: String!) {
+  project(key: $key) {
+    key
+    name
+    level
+    type
+    description
+  }
+}
+```
+
+**Variables:**
+
+```json
+{
+  "key": "nest"
+}
+```
+
+## Frontend integration
+
+The Next.js frontend uses [Apollo Client](https://www.apollographql.com/docs/react/) to query the GraphQL API. All frontend queries and mutations are written in `.graphql` files co-located with their components.
+
+<Tip>
+  The `DjangoOptimizerExtension` automatically adds `select_related` and `prefetch_related` calls based on the fields requested in each query. You do not need to optimize queries manually in resolvers.
+</Tip>
+
+## Advanced use
+
+The GraphQL API is primarily designed for internal use by the frontend. It does not use token-based authentication independently — sessions are established via the standard Django login flow.
+
+For external integrations and programmatic access, use the [REST API](/backend/api/rest) instead, which provides stable versioning, API key authentication, and official client SDKs.

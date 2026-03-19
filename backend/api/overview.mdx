@@ -1,0 +1,78 @@
+---
+title: "API overview"
+description: "OWASP Nest exposes a public REST API and an internal GraphQL API for different consumer types."
+---
+
+OWASP Nest exposes two APIs from the backend:
+
+<CardGroup cols={2}>
+  <Card title="REST API v0" icon="brackets-curly" href="/backend/api/rest">
+    Public API for programmatic integrations and client SDK generation. Built with Django Ninja.
+  </Card>
+  <Card title="GraphQL API" icon="circle-nodes" href="/backend/api/graphql">
+    Internal API used by the Next.js frontend. Built with Strawberry GraphQL.
+  </Card>
+</CardGroup>
+
+## REST API
+
+| Property | Value |
+|---|---|
+| Base URL | `/api/v0/` |
+| Framework | [Django Ninja](https://django-ninja.dev/) |
+| OpenAPI schema | `/api/v0/openapi.json` |
+| Interactive docs | `/api/v0/docs` |
+| Authentication | API key (header) |
+| Rate limit | 10 requests/second per key |
+
+The auto-generated OpenAPI schema is used to produce official client SDKs in multiple languages.
+
+<CardGroup cols={3}>
+  <Card title="Go SDK" icon="code" href="https://github.com/owasp/nest-sdk">
+    `github.com/owasp/nest-sdk`
+  </Card>
+  <Card title="Python SDK" icon="python" href="https://github.com/owasp/nest-sdk-python">
+    `owasp-nest-sdk` on PyPI
+  </Card>
+  <Card title="TypeScript SDK" icon="js" href="https://github.com/OWASP/nest-sdk-typescript">
+    `@owasp/nest-sdk` on npm
+  </Card>
+</CardGroup>
+
+## GraphQL API
+
+| Property | Value |
+|---|---|
+| Endpoint | `/graphql/` |
+| Framework | [Strawberry GraphQL](https://strawberry.rocks/) |
+| Playground | `/graphql/` (development only) |
+| Authentication | Session cookie (frontend) |
+| Introspection | Disabled in production |
+
+## Authentication
+
+### REST API key
+
+REST API requests must include a valid API key. Pass your key using the `X-Api-Key` header:
+
+```bash
+curl https://nest.owasp.dev/api/v0/projects/ \
+  -H "X-Api-Key: your-api-key"
+```
+
+<Note>
+  In `Local` and `E2e` environments, authentication is disabled so you can call the API without a key.
+</Note>
+
+### GraphQL (frontend)
+
+The GraphQL API uses Django session authentication. The Next.js frontend sends requests with the session cookie established at login. Direct use outside the frontend is possible in development when the GraphiQL playground is available at `/graphql/`.
+
+## SDK compatibility requirements
+
+When contributing to the REST API, follow these rules to avoid breaking SDK generation:
+
+- **Each endpoint must have a unique `operationId`** in the OpenAPI schema. Duplicate `operationId`s cause method name conflicts in generated SDKs.
+- **The authentication class in `apps/api/rest/v0/__init__.py` must remain named `ApiKey`**. The `api_key` parameter name in SDKs is derived from this class name. Do not rename it.
+
+See [REST API](/backend/api/rest) for the full endpoint reference.

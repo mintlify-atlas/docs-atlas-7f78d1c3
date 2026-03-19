@@ -1,0 +1,105 @@
+---
+title: "Local setup"
+description: "Set up and run the OWASP Nest backend on your local machine using Docker Compose."
+---
+
+The backend uses Docker for local development. All services — the Django application, PostgreSQL database, and Redis cache — run as containers defined in `docker-compose/local/compose.yaml`.
+
+## Prerequisites
+
+<CardGroup cols={2}>
+  <Card title="Docker" icon="docker">
+    Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) or the Docker Engine with the Compose plugin.
+  </Card>
+  <Card title="pre-commit" icon="shield-check">
+    Install [pre-commit](https://pre-commit.com/) and run `pre-commit install` in the repository root to activate hooks.
+  </Card>
+</CardGroup>
+
+## Getting started
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/OWASP/Nest.git
+    cd Nest
+    ```
+  </Step>
+  <Step title="Copy the environment file">
+    Copy the example file and fill in the required values. See [Environment variables](/backend/environment-variables) for the full reference.
+
+    ```bash
+    cp backend/.env.example backend/.env
+    ```
+  </Step>
+  <Step title="Start all services">
+    Run the full stack from the repository root:
+
+    ```bash
+    docker compose -f docker-compose/local/compose.yaml up
+    ```
+
+    Or use the convenience Makefile target:
+
+    ```bash
+    make run
+    ```
+
+    Docker Compose starts the following containers:
+
+    | Container | Description |
+    |---|---|
+    | `nest-backend` | Django application server |
+    | `nest-db` | PostgreSQL database |
+    | `nest-cache` | Redis instance |
+    | `nest-worker` | Django RQ background worker |
+  </Step>
+  <Step title="Run database migrations">
+    After the containers are up, apply all pending migrations:
+
+    ```bash
+    make migrate
+    ```
+  </Step>
+  <Step title="Create a superuser (optional)">
+    Create a Django admin account to access the `/admin/` interface:
+
+    ```bash
+    make create-superuser
+    ```
+  </Step>
+</Steps>
+
+## Makefile targets
+
+The repository provides a set of `make` targets that execute commands inside the running `nest-backend` container.
+
+| Target | Command | Description |
+|---|---|---|
+| `make migrate` | `python manage.py migrate` | Apply database migrations |
+| `make migrations` | `python manage.py makemigrations` | Generate new migration files |
+| `make create-superuser` | `python manage.py createsuperuser` | Create a Django admin superuser |
+| `make test-backend` | `pytest` (inside Docker) | Run the full backend test suite |
+| `make django-shell` | `python manage.py shell` | Open the interactive Django shell |
+| `make index-data` | `python manage.py algolia_reindex` | Re-index all data in Algolia |
+| `make enrich-data` | Multiple management commands | Enrich chapters, projects, and events from external sources |
+| `make dump-data` | `python manage.py dump_data` | Dump the current database state |
+| `make load-data` | `pg_restore …` | Restore the database from a dump |
+
+<Tip>
+  Run `make help` from the repository root to see all available targets with descriptions.
+</Tip>
+
+## Running tests
+
+The test suite requires no additional setup beyond having Docker running.
+
+```bash
+make test-backend
+```
+
+Tests run inside an isolated container using `pytest-xdist` for parallel execution. Coverage must be at or above 95% for the suite to pass.
+
+<Note>
+  The backend `.env.example` file is used as the environment when running tests, so you do not need a separate test `.env`.
+</Note>

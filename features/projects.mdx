@@ -1,0 +1,89 @@
+---
+title: "Projects"
+description: "Browse, search, and explore 300+ OWASP projects with GitHub statistics and AI-generated insights."
+---
+
+The Projects page is the primary catalogue of OWASP projects on Nest. It lets you search and filter the full list of active OWASP projects, view GitHub statistics, explore open issues, and read AI-generated project summaries.
+
+## Browsing projects
+
+Navigate to **Projects** from the top navigation bar or visit [nest.owasp.org/projects](https://nest.owasp.org/projects) directly.
+
+Each project card in the list displays:
+
+- Project name and AI-generated summary
+- Project level badge (Flagship, Production, Lab, or Incubator)
+- GitHub statistics: forks, stars, and contributor count
+- Top contributors (avatar list)
+- A **View Details** button linking to the project's detail page
+
+Only active projects with at least one active repository are shown.
+
+## Search and filtering
+
+The search bar at the top of the page queries the Algolia `projects` index in real time. You can search by:
+
+- Project name or keywords in the description
+- Technology tags and topics
+- Project type (Code, Tool, Documentation)
+
+Use the sort controls to reorder results by:
+
+| Sort option | Description |
+|---|---|
+| Default (relevance) | Algolia relevance ranking |
+| Stars | GitHub star count |
+| Forks | GitHub fork count |
+| Contributors | Number of contributors |
+| Activity | Most recently active |
+
+Results are paginated. Use the page controls at the bottom of the list to navigate.
+
+## Project detail page
+
+Click **View Details** on any project card to open the full project page at `/projects/<key>`.
+
+The detail page shows:
+
+<CardGroup cols={2}>
+  <Card title="Overview" icon="circle-info">
+    Project description, level, type, audience, programming languages, licenses, and topics sourced from the OWASP GitHub repository.
+  </Card>
+  <Card title="GitHub statistics" icon="chart-bar">
+    Commits, contributors, forks, stars, open issues, open pull requests, releases, and watchers aggregated across all project repositories.
+  </Card>
+  <Card title="Open issues" icon="circle-exclamation">
+    A list of open GitHub issues across the project's repositories. Each issue links directly to GitHub and may include an AI-generated hint.
+  </Card>
+  <Card title="AI insights" icon="brain">
+    An AI-generated summary of the project and its current focus areas, produced by the LangGraph-based RAG agent using OpenAI.
+  </Card>
+</CardGroup>
+
+## Project levels
+
+OWASP assigns each project a maturity level:
+
+| Level | Description |
+|---|---|
+| **Flagship** | Highest maturity. Strategic projects that demonstrate OWASP's mission. |
+| **Production** | Stable, actively maintained projects with a track record. |
+| **Lab** | Experimental or newer projects under active development. |
+| **Incubator** | Early-stage projects seeking community validation. |
+
+## GitHub data synchronization
+
+Project data is kept current through a scheduled background task:
+
+1. The backend fetches repository metadata, issues, pull requests, and contributor data from the GitHub API using PyGitHub.
+2. Each project's aggregated statistics (`commits_count`, `contributors_count`, `forks_count`, `stars_count`, `open_issues_count`, `releases_count`) are recomputed and saved to PostgreSQL.
+3. Updated project records are re-indexed in Algolia so search results reflect the latest data.
+4. If a project does not yet have an AI-generated summary, one is generated automatically on save using the configured OpenAI prompt.
+
+<Info>
+  Data freshness depends on the GitHub sync schedule. Metrics shown on the platform reflect the most recent completed sync.
+</Info>
+
+## Health metrics
+
+Each project has an associated health score computed from a set of requirements covering code activity, documentation, leader compliance, and funding policy. The health score is visible on the project detail page and helps contributors identify projects that may need attention.

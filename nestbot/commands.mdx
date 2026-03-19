@@ -1,0 +1,258 @@
+---
+title: "Slash commands"
+description: "Complete reference for all NestBot slash commands and their usage."
+---
+
+NestBot registers a dedicated slash command for each feature area. All commands are handled at the `/integrations/slack/commands/` endpoint and respond with a private direct message to the invoking user.
+
+<Info>
+Command responses are sent as direct messages so they don't clutter shared channels. Feedback prompts are included in most responses so you can tell the team how helpful the output was.
+</Info>
+
+## How commands work
+
+Every command class inherits from `CommandBase` (`backend/apps/slack/commands/command.py`). When you run a slash command:
+
+1. Slack sends a POST request to the commands endpoint.
+2. Slack Bolt dispatches the payload to the matching handler class.
+3. The handler calls `render_blocks()`, which renders a Jinja2 template with context data.
+4. The rendered Block Kit JSON is sent back as a direct message via `client.chat_postMessage`.
+
+If an error occurs, the bot sends a `:warning: An error occurred. Please try again later.` message instead of failing silently.
+
+## Command reference
+
+<AccordionGroup>
+  <Accordion title="/ai — AI-powered OWASP Nest assistant">
+    Ask the NestBot AI assistant any OWASP-related question. The assistant uses the Nest knowledge base to provide contextual answers.
+
+    ```
+    /ai <your question>
+    ```
+
+    **Examples:**
+    ```
+    /ai What is the OWASP Top 10?
+    /ai How do I get started contributing to OWASP?
+    ```
+  </Accordion>
+
+  <Accordion title="/board — OWASP Global Board information">
+    Displays information about the OWASP Global Board of Directors, including current members and their roles.
+
+    ```
+    /board
+    ```
+  </Accordion>
+
+  <Accordion title="/chapters — Find OWASP chapters">
+    Search for OWASP chapters by name or location. Run without arguments to browse all chapters, or pass a search term to filter results.
+
+    ```
+    /chapters
+    /chapters <search term>
+    /chapters --help
+    ```
+
+    **Examples:**
+    ```
+    /chapters London
+    /chapters --start
+    ```
+
+    Returns up to 10 matching chapters with metadata and timestamps.
+  </Accordion>
+
+  <Accordion title="/committees — List OWASP committees">
+    Lists active OWASP committees with descriptions and contact information.
+
+    ```
+    /committees
+    /committees <name>
+    ```
+  </Accordion>
+
+  <Accordion title="/community — Explore the OWASP community">
+    Overview of the OWASP community, key channels, and ways to get involved.
+
+    ```
+    /community
+    ```
+  </Accordion>
+
+  <Accordion title="/contact — Contact OWASP">
+    Provides official OWASP contact details and support channels.
+
+    ```
+    /contact
+    ```
+  </Accordion>
+
+  <Accordion title="/contribute — Find contribution opportunities">
+    Surfaces open contribution opportunities across OWASP projects. Search by keyword or run without arguments to see current opportunities.
+
+    ```
+    /contribute
+    /contribute <search term>
+    /contribute --help
+    ```
+
+    **Examples:**
+    ```
+    /contribute documentation
+    /contribute Python
+    ```
+
+    Returns up to 10 results with project metadata and issue summaries.
+  </Accordion>
+
+  <Accordion title="/donate — Support OWASP with a donation">
+    Provides information on how to donate to OWASP and links to the donation page.
+
+    ```
+    /donate
+    ```
+  </Accordion>
+
+  <Accordion title="/events — Browse OWASP events">
+    Lists upcoming OWASP events including AppSec conferences and chapter meetings.
+
+    ```
+    /events
+    ```
+  </Accordion>
+
+  <Accordion title="/gsoc — Google Summer of Code information">
+    Provides GSoC information for OWASP. Run without arguments for a general overview, or pass a year to see projects for that specific programme.
+
+    ```
+    /gsoc
+    /gsoc <year>
+    ```
+
+    **Examples:**
+    ```
+    /gsoc
+    /gsoc 2024
+    /gsoc 2025
+    ```
+
+    Supported years: 2012–2026. For years with announcements, a link to the official GSoC announcement is included. Projects are sorted alphabetically by name.
+  </Accordion>
+
+  <Accordion title="/jobs — Check available job opportunities">
+    Lists security-related job opportunities from the OWASP jobs board.
+
+    ```
+    /jobs
+    ```
+  </Accordion>
+
+  <Accordion title="/leaders — Chapter and project leaders">
+    Look up OWASP leaders by name, chapter, or project.
+
+    ```
+    /leaders <name/chapter/project>
+    ```
+
+    **Examples:**
+    ```
+    /leaders OWASP Nest
+    /leaders London
+    ```
+  </Accordion>
+
+  <Accordion title="/news — OWASP news">
+    Returns the latest OWASP news, blog posts, and announcements.
+
+    ```
+    /news
+    ```
+  </Accordion>
+
+  <Accordion title="/owasp — Your gateway to OWASP">
+    General information about OWASP: mission, projects, and how to get involved.
+
+    ```
+    /owasp
+    /owasp --help
+    ```
+  </Accordion>
+
+  <Accordion title="/policies — Policies and procedures">
+    Returns links to official OWASP policies and procedures documentation.
+
+    ```
+    /policies
+    ```
+  </Accordion>
+
+  <Accordion title="/projects — Search the OWASP project directory">
+    Searches the OWASP project directory. Provide a search term to filter results, or run without arguments to browse all projects.
+
+    ```
+    /projects
+    /projects <search query>
+    ```
+
+    **Examples:**
+    ```
+    /projects OWASP Top 10
+    /projects dependency track
+    /projects mobile
+    ```
+
+    Returns up to 10 matching projects with summaries, metadata, and timestamps. Project names are truncated at 80 characters and summaries at 300 characters.
+  </Accordion>
+
+  <Accordion title="/sponsor and /sponsors — Sponsorship information">
+    `/sponsor` provides information on how to become an OWASP sponsor. `/sponsors` lists current OWASP sponsors.
+
+    ```
+    /sponsor
+    /sponsors
+    ```
+  </Accordion>
+
+  <Accordion title="/staff — OWASP corporate structure">
+    Displays information about OWASP staff and the organisational structure.
+
+    ```
+    /staff
+    ```
+  </Accordion>
+
+  <Accordion title="/users — OWASP user lookup">
+    Look up OWASP Slack users by name or username.
+
+    ```
+    /users <user>
+    ```
+
+    **Example:**
+    ```
+    /users Jane Doe
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Adding a new command
+
+To add a new slash command:
+
+1. Create a new file in `backend/apps/slack/commands/`, for example `mycommand.py`.
+2. Define a class that inherits from `CommandBase`. The class name determines the command name (e.g. `class MyCommand` registers `/mycommand`).
+3. Override `get_context()` or `render_blocks()` if the command needs dynamic data.
+4. Create a corresponding Jinja2 template at `backend/apps/slack/templates/commands/my_command.jinja`.
+5. Add the command to `backend/apps/slack/MANIFEST.yaml` so Slack knows to route it to the bot.
+
+```python
+# backend/apps/slack/commands/mycommand.py
+from apps.slack.commands.command import CommandBase
+
+class Mycommand(CommandBase):
+    """Slack bot /mycommand command."""
+    # Override get_context() to pass data to your template.
+```
+
+`CommandBase.configure_commands()` discovers and registers all subclasses automatically at startup — no additional wiring is required.

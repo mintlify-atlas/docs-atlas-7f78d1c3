@@ -1,0 +1,117 @@
+---
+title: "Architecture"
+description: "An overview of OWASP Nest's full-stack architecture, technology choices, and infrastructure."
+---
+
+OWASP Nest is a full-stack web application built with a Django backend and a Next.js frontend, connected through two APIs and deployed via Docker on AWS infrastructure.
+
+## Technology stack
+
+| Layer | Technology |
+|---|---|
+| **Backend language** | Python 3.13 |
+| **Backend framework** | Django 6.x |
+| **REST API** | Django Ninja (OpenAPI v0) |
+| **GraphQL API** | Strawberry GraphQL |
+| **Frontend framework** | Next.js, React, TypeScript |
+| **Styling** | TailwindCSS, HeroUI |
+| **Search** | Algolia |
+| **Database** | PostgreSQL with pgvector |
+| **Caching** | Redis |
+| **Task queue** | Django RQ |
+| **AI/ML** | LangChain, LangGraph, OpenAI |
+| **Slack integration** | Slack Bolt for Python |
+| **Infrastructure** | Docker, Terraform, AWS |
+
+## System overview
+
+The application is composed of two main services that communicate via HTTP:
+
+- **Backend** — A Django application that manages data ingestion from GitHub, stores project and chapter data in PostgreSQL, indexes records in Algolia, runs AI pipelines using LangGraph, and exposes both a REST API and a GraphQL API.
+- **Frontend** — A Next.js application that fetches data from both the REST API (for server-side rendering and direct queries) and the GraphQL API (for complex relational queries using generated TypeScript types).
+
+Additional infrastructure components:
+
+- **Redis** handles caching and acts as the broker for Django RQ background task queues.
+- **Algolia** provides the search indices for projects, chapters, and issues — powering the fast full-text search available in the frontend.
+- **PostgreSQL with pgvector** stores all application data and enables vector similarity search used by the AI agent for retrieval-augmented generation (RAG).
+
+## API layer
+
+Nest exposes two APIs for data access:
+
+<Tabs>
+  <Tab title="REST API (v0)">
+    The REST API is built with [Django Ninja](https://django-ninja.dev) and is available at `/api/v0/`. It is fully documented via an OpenAPI schema, which enables automatic SDK generation and integration with API clients.
+
+    ```
+    https://nest.owasp.org/api/v0/
+    ```
+
+    The REST API is the recommended endpoint for external integrations, scripts, and programmatic access to Nest data.
+  </Tab>
+  <Tab title="GraphQL API">
+    The GraphQL API is built with [Strawberry GraphQL](https://strawberry.rocks) and is available at `/graphql/`. It is used internally by the Next.js frontend to power complex relational queries, such as fetching a project along with its repositories, contributors, and associated issues in a single request.
+
+    ```
+    https://nest.owasp.org/graphql/
+    ```
+
+    The GraphQL schema is used to auto-generate TypeScript types for the frontend via `graphql-codegen`.
+  </Tab>
+</Tabs>
+
+## Backend application structure
+
+The Django backend is organized into focused Django apps:
+
+| App | Responsibility |
+|---|---|
+| `owasp` | OWASP entity models: projects, chapters, committees, members, snapshots |
+| `github` | GitHub data ingestion: repositories, issues, pull requests, releases, users |
+| `ai` | AI agent pipeline: LangGraph RAG agent, embeddings, summaries |
+| `mentorship` | Mentorship programs, mentors, mentees, modules, and tasks |
+| `slack` | NestBot slash commands, events, and Slack messaging |
+| `api` | REST and GraphQL API routers and schema definitions |
+| `core` | Shared models including prompts used by the AI layer |
+
+## Data flow
+
+GitHub data is ingested through a scheduled pipeline:
+
+1. A background task (Django RQ) fetches data from the GitHub API using PyGitHub.
+2. Project, chapter, issue, and user records are created or updated in PostgreSQL.
+3. Updated records are indexed in Algolia for fast search.
+4. AI summaries are generated for projects and issues using the LangGraph agent.
+5. Vector embeddings are stored in PostgreSQL via pgvector for RAG queries.
+
+## Frontend structure
+
+The Next.js frontend uses the App Router pattern. Pages are organized under `src/app/` by feature area:
+
+```
+src/app/
+├── projects/       # Project catalogue and detail pages
+├── chapters/       # Chapter map and detail pages
+├── contribute/     # Contribution opportunities (issues)
+├── mentorship/     # Mentorship programs
+├── community/      # Community members
+├── board/          # OWASP board of directors
+├── settings/       # User settings
+└── api/            # Next.js API routes (auth, search proxy)
+```
+
+Search is powered by Algolia directly from the frontend — the `useSearchPage` hook wraps Algolia queries and handles pagination, sorting, and filtering for all list pages.
+
+## Infrastructure and deployment
+
+Nest uses a containerized deployment model:
+
+- **Docker** packages both the backend and frontend for consistent builds across local development, CI/CD, and production.
+- **Terraform** manages AWS infrastructure as code, including compute, networking, and storage resources.
+- **GitHub Actions** runs the CI/CD pipeline for linting, testing, and deployment.
+- **AWS** hosts the production environment.
+
+<Tip>
+  To run Nest locally, you only need Docker and `make`. Run `make run` from the project root to start all services. See the [local setup guide](/contributing/local-development) for full instructions.
+</Tip>

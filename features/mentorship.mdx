@@ -1,0 +1,79 @@
+---
+title: "Mentorship"
+description: "Explore OWASP mentorship programs including Google Summer of Code and connect with mentors across the community."
+---
+
+OWASP Nest includes a dedicated mentorship platform that manages structured programs connecting mentees with mentors. The primary use case is Google Summer of Code (GSoC), but the system is designed to support any OWASP-affiliated mentorship initiative.
+
+## Mentorship programs
+
+Navigate to **Mentorship** from the top navigation bar to browse available programs. Each program has:
+
+- A name, description, and status (`published`, `draft`, or `completed`)
+- A defined start and end date
+- Supported experience levels (e.g., beginner, intermediate, advanced)
+- A cap on the number of mentees (`mentees_limit`)
+- One or more program modules, each associated with specific mentors
+
+Only `published` programs are visible to the general public.
+
+## Roles
+
+The mentorship system has three distinct roles:
+
+<CardGroup cols={3}>
+  <Card title="Mentee" icon="user">
+    A participant enrolled in a program. Linked to a GitHub account and optionally a Nest account. Mentees are enrolled in specific program modules through a `MenteeProgram` record.
+  </Card>
+  <Card title="Mentor" icon="chalkboard-user">
+    An experienced community member who guides mentees through modules. Linked to both a GitHub user and a Nest user account.
+  </Card>
+  <Card title="Program admin" icon="user-gear">
+    A trusted user who can manage program settings, approve mentees, and administer modules within a program. Admins must have a Nest account.
+  </Card>
+</CardGroup>
+
+## Modules and tasks
+
+Each program is divided into **modules** — self-contained units of work with their own set of mentors, tasks, and milestones. Modules allow a single program to span multiple project areas with different mentors responsible for each.
+
+- **Tasks** within a module define the specific deliverables expected of a mentee.
+- **Task levels** provide a difficulty or complexity rating for each task.
+- A mentee's progress through a module is tracked via their `MenteeModule` record.
+
+## Google Summer of Code (GSoC)
+
+OWASP participates in GSoC annually. Nest serves as the platform for students to:
+
+1. Browse published GSoC programs and their modules.
+2. Review the tasks and expected deliverables for each module.
+3. Identify mentors associated with the modules they are interested in.
+4. Connect with the OWASP community via Slack before submitting a proposal.
+
+<Tip>
+  Use the NestBot Slack command `/nest gsoc` to get a quick overview of current GSoC opportunities and links to the active programs on Nest.
+</Tip>
+
+## Applying to a program
+
+<Steps>
+  <Step title="Sign in with GitHub">
+    You must be signed in with a GitHub account to apply to a mentorship program. Click **Sign in with GitHub** in the top navigation bar.
+  </Step>
+  <Step title="Browse published programs">
+    Navigate to **Mentorship** and review the list of published programs. Read each program's description, experience level requirements, and module details.
+  </Step>
+  <Step title="Review the modules">
+    Open a program to see its modules. Each module lists the mentors responsible for it and the tasks you will be expected to complete.
+  </Step>
+  <Step title="Connect with mentors">
+    Reach out to mentors through the OWASP Slack workspace before applying. The [#project-nest](https://owasp.slack.com/archives/project-nest) channel is a good starting point. Mentors' GitHub profiles are linked from their mentor pages.
+  </Step>
+  <Step title="Submit your application">
+    Follow the application instructions provided in the program description. For GSoC, this means submitting a proposal through the official GSoC platform by the published deadline.
+  </Step>
+</Steps>
+
+<Info>
+  Program availability depends on the time of year. GSoC programs are typically published in the first quarter of the calendar year. Check the Mentorship page regularly or watch the [#project-nest](https://owasp.slack.com/archives/project-nest) channel for announcements.
+</Info>

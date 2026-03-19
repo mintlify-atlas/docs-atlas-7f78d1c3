@@ -1,0 +1,123 @@
+---
+title: "GraphQL code generation"
+description: "How to auto-generate TypeScript types from the backend GraphQL schema using graphql-codegen."
+---
+
+The OWASP Nest frontend uses [`@graphql-codegen/cli`](https://the-guild.dev/graphql/codegen) to generate TypeScript types and typed document nodes directly from the backend GraphQL schema. This means you never write GraphQL response types by hand — they are always in sync with the actual schema.
+
+## How it works
+
+1. The codegen tool connects to the running backend at `http://localhost:8000/graphql/` (or `PUBLIC_API_URL` if overridden).
+2. It first fetches a CSRF token from `/csrf/` to authenticate the schema introspection request.
+3. It introspects the live schema and scans all `*.ts` and `*.tsx` files in `src/` for GraphQL operation definitions (queries, mutations, fragments).
+4. It generates TypeScript types and [TypedDocumentNode](https://github.com/dotansimha/graphql-typed-document-node) objects into `src/types/__generated__/`.
+
+## Output
+
+Generated files are written to `src/types/__generated__/`. The main file is:
+
+```
+src/types/__generated__/
+├── graphql.ts          # Base schema types (scalars, enums, input types, object types)
+└── *Queries.generated.ts  # Per-operation files generated alongside each query file
+```
+
+<Warning>
+Do not edit files inside `src/types/__generated__/` manually. They are overwritten every time you run the codegen command.
+</Warning>
+
+## Configuration
+
+The codegen configuration lives in `frontend/graphql-codegen.ts`. Key settings:
+
+```typescript
+// graphql-codegen.ts (simplified)
+const config: CodegenConfig = {
+  schema: {
+    'http://localhost:8000/graphql/': {
+      headers: {
+        Cookie: `csrftoken=${csrfToken}`,
+        'X-CSRFToken': csrfToken,
+      },
+    },
+  },
+  generates: {
+    './src/types/__generated__/graphql.ts': {
+      plugins: ['typescript'],          // Base schema types
+    },
+    './src/': {
+      documents: ['src/**/*.{ts,tsx}'], // Scans for gql`` operations
+      plugins: ['typescript-operations', 'typed-document-node'],
+      preset: 'near-operation-file',   // Output next to each query file
+      presetConfig: {
+        baseTypesPath: './types/__generated__/graphql.ts',
+        folder: '../types/__generated__',
+      },
+    },
+  },
+}
+```
+
+### Scalar mappings
+
+Custom scalar types are mapped to TypeScript types in the config:
+
+| GraphQL scalar | TypeScript type |
+| --- | --- |
+| `Date` | `string \| number` |
+| `DateTime` | `string \| number` |
+| `JSON` | `Record<string, unknown>` |
+
+### Nullable fields
+
+The config sets `avoidOptionals.field: true`, which means nullable GraphQL fields are typed as `T | null` rather than `T | undefined`. This matches Apollo Client's runtime behaviour.
+
+## Running the codegen
+
+<Steps>
+  <Step title="Start the backend">
+    The codegen connects to a live backend to introspect the schema. Make sure the backend is running:
+
+    ```bash
+    # From the repository root, start all services
+    docker compose -f docker-compose/local/compose.yaml up
+    ```
+
+    Or start the backend on its own if you have it set up directly.
+  </Step>
+  <Step title="Run the codegen command">
+    From the `frontend/` directory:
+
+    ```bash
+    pnpm run graphql-codegen
+    ```
+
+    This runs `graphql-codegen --config graphql-codegen.ts`.
+  </Step>
+  <Step title="Verify the output">
+    Check that `src/types/__generated__/graphql.ts` has been updated and any per-operation `*.generated.ts` files reflect the latest schema.
+  </Step>
+</Steps>
+
+## Regenerating types after schema changes
+
+Whenever the backend GraphQL schema changes (new types, updated fields, renamed operations), regenerate the types:
+
+```bash
+# Ensure the backend is running, then:
+pnpm run graphql-codegen
+```
+
+Commit the updated files in `src/types/__generated__/` alongside any code changes that depend on the new schema.
+
+<Tip>
+If you add a new GraphQL query or mutation in a `*.tsx` file, run the codegen to generate its typed document node. You can then import the generated document directly into your component and pass it to Apollo Client's `useQuery` or `useMutation` hooks for full type safety.
+</Tip>
+
+## Overriding the backend URL
+
+If your backend runs on a different port or host, set the `PUBLIC_API_URL` environment variable before running the codegen:
+
+```bash
+PUBLIC_API_URL=http://localhost:9000 pnpm run graphql-codegen
+```

@@ -1,0 +1,172 @@
+---
+title: "Environment variables"
+description: "Reference for all environment variables used by the OWASP Nest backend."
+---
+
+Copy `backend/.env.example` to `backend/.env` and populate the values before starting the backend. Variables prefixed with `DJANGO_` are read by `django-configurations` and automatically stripped of the prefix before being passed to Django settings.
+
+<Note>
+  All variables default to `None` in `.env.example`. The backend will fail to start for any required variable left as `None`.
+</Note>
+
+## Algolia
+
+<ParamField path="DJANGO_ALGOLIA_APPLICATION_ID" type="string" required>
+  The application ID for the Algolia project. Used to initialize the Algolia client for search and indexing.
+
+  **Example:** `APPID123`
+</ParamField>
+
+<ParamField path="DJANGO_ALGOLIA_WRITE_API_KEY" type="string" required>
+  The write API key for Algolia. Required for the backend to create, update, and delete records in Algolia indices.
+
+  **Example:** `abc123writekey`
+</ParamField>
+
+<ParamField path="DJANGO_ALGOLIA_EXCLUDED_LOCAL_INDEX_NAMES" type="string">
+  A comma-separated list of index names to exclude when running locally. Prevents specific indices from being created or modified in development environments.
+
+  **Example:** `local_chapters,local_projects`
+</ParamField>
+
+## AWS
+
+<ParamField path="DJANGO_AWS_ACCESS_KEY_ID" type="string">
+  AWS access key ID. Used to authenticate with AWS services such as S3 for static file and media storage via `django-storages`.
+
+  **Example:** `AKIAIOSFODNN7EXAMPLE`
+</ParamField>
+
+<ParamField path="DJANGO_AWS_SECRET_ACCESS_KEY" type="string">
+  AWS secret access key. Used alongside `DJANGO_AWS_ACCESS_KEY_ID` to authenticate AWS API requests.
+
+  **Example:** `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY`
+</ParamField>
+
+## Django core
+
+<ParamField path="DJANGO_CONFIGURATION" type="string" required>
+  The Django settings class to load. Controls which environment-specific settings are active.
+
+  **Accepted values:** `Local`, `Production`, `Staging`, `Test`, `E2e`, `Fuzz`
+
+  **Example:** `Local`
+</ParamField>
+
+<ParamField path="DJANGO_SECRET_KEY" type="string" required>
+  Django's cryptographic signing key. Used for sessions, CSRF tokens, and password reset links. Must be kept secret and unique per environment.
+
+  **Example:** `django-insecure-changeme`
+</ParamField>
+
+<ParamField path="DJANGO_ALLOWED_HOSTS" type="string" required>
+  Comma-separated list of hostnames the server is permitted to serve. Prevents HTTP Host header injection attacks.
+
+  **Example:** `localhost,127.0.0.1`
+</ParamField>
+
+<ParamField path="DJANGO_RELEASE_VERSION" type="string">
+  The current release version of the backend. Used for identification in logs and Sentry releases.
+
+  **Example:** `1.0.5`
+</ParamField>
+
+<ParamField path="DJANGO_PUBLIC_IP_ADDRESS" type="string">
+  The public IP address to use for geographic location lookups in local development.
+
+  **Example:** `127.0.0.1`
+</ParamField>
+
+## Database
+
+<ParamField path="DJANGO_DB_HOST" type="string" required>
+  Hostname of the PostgreSQL server. When using Docker Compose locally, this is the container service name.
+
+  **Example:** `db`
+</ParamField>
+
+<ParamField path="DJANGO_DB_PORT" type="integer" required>
+  Port number for the PostgreSQL connection.
+
+  **Example:** `5432`
+</ParamField>
+
+<ParamField path="DJANGO_DB_NAME" type="string" required>
+  Name of the PostgreSQL database.
+
+  **Example:** `nest`
+</ParamField>
+
+<ParamField path="DJANGO_DB_USER" type="string" required>
+  Username for the PostgreSQL connection.
+
+  **Example:** `postgres`
+</ParamField>
+
+<ParamField path="DJANGO_DB_PASSWORD" type="string" required>
+  Password for the PostgreSQL database user.
+</ParamField>
+
+## GitHub
+
+<ParamField path="GITHUB_TOKEN" type="string" required>
+  Personal access token or app installation token for the GitHub API. Used by management commands that sync organization data, repositories, issues, and users.
+
+  **Example:** `ghp_xxxxxxxxxxxxxxxxxxxx`
+</ParamField>
+
+## OpenAI / ElevenLabs
+
+<ParamField path="DJANGO_OPEN_AI_SECRET_KEY" type="string">
+  Secret key for the OpenAI API. Required for AI-powered features including embedding generation and the LangGraph agent.
+
+  **Example:** `sk-xxxxxxxxxxxxxxxxxxxx`
+</ParamField>
+
+<ParamField path="DJANGO_ELEVENLABS_API_KEY" type="string">
+  API key for the ElevenLabs text-to-speech service. Used for audio generation in community snapshot videos.
+
+  **Example:** `el_xxxxxxxxxxxxxxxxxxxx`
+</ParamField>
+
+## Redis
+
+<ParamField path="DJANGO_REDIS_HOST" type="string" required>
+  Hostname of the Redis server. Used for both the `django-redis` response cache and the Django RQ task queue.
+
+  **Example:** `cache`
+</ParamField>
+
+<ParamField path="DJANGO_REDIS_PASSWORD" type="string">
+  Password for Redis authentication. Required when `DJANGO_REDIS_AUTH_ENABLED` is `True`.
+
+  **Example:** `strongredispassword`
+</ParamField>
+
+<ParamField path="DJANGO_REDIS_AUTH_ENABLED" type="boolean">
+  Whether Redis requires password authentication. Set to `False` for local development without a Redis password.
+
+  **Default:** `True`
+</ParamField>
+
+## Slack
+
+<ParamField path="DJANGO_SLACK_BOT_TOKEN" type="string">
+  OAuth bot token for the NestBot Slack app. Authenticates the bot so it can send messages and respond to events in Slack channels.
+
+  **Example:** `xoxb-xxxxxxxxxxxx-xxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxx`
+</ParamField>
+
+<ParamField path="DJANGO_SLACK_SIGNING_SECRET" type="string">
+  Signing secret for the Slack app. Used to verify that incoming webhook payloads originate from Slack.
+
+  **Example:** `abc123signingsecret`
+</ParamField>
+
+## Sentry
+
+<ParamField path="DJANGO_SENTRY_DSN" type="string">
+  Data Source Name (DSN) for the Sentry error-tracking service. When set, all unhandled exceptions and performance traces are sent to Sentry.
+
+  **Example:** `https://xyz@o0.ingest.sentry.io/654321`
+</ParamField>

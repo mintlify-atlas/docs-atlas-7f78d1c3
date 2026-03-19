@@ -1,0 +1,131 @@
+---
+title: "Events"
+description: "How NestBot handles Slack workspace events including app mentions, new members, and messages."
+---
+
+NestBot subscribes to Slack workspace events via the [Events API](https://api.slack.com/apis/events-api). When an event occurs — a user joins a channel, mentions the bot, or posts a message — Slack sends a POST request to the `/integrations/slack/events/` endpoint. Slack Bolt dispatches the payload to the matching handler.
+
+## Event handler architecture
+
+All event handlers inherit from `EventBase` (`backend/apps/slack/events/event.py`). The base class provides:
+
+- **Template loading** — each handler has a `direct_message_template` and an optional `ephemeral_message_template`, both resolved from `backend/apps/slack/templates/events/`.
+- **Context building** — `get_context()` populates standard variables (`NEST_BOT_NAME`, `OWASP_NEST_URL`, `USER_ID`, etc.) that every template can reference.
+- **Block rendering** — `render_blocks()` renders the Jinja2 template and converts the output into Slack Block Kit JSON.
+- **Message dispatch** — `handle_event()` opens a DM conversation if needed and sends direct and/or ephemeral messages.
+- **Error handling** — `SlackApiError` with `cannot_dm_bot` is caught and logged rather than raised, so bot-to-bot DM attempts fail gracefully.
+
+Handlers are registered automatically: `EventBase.configure_events()` iterates over all subclasses and calls `register()` on each, which calls `SlackConfig.app.event(self.event_type, matchers=self.matchers)(self.handler)`.
+
+## Handled events
+
+### `app_home_opened`
+
+**File:** `backend/apps/slack/events/app_home_opened.py`
+
+Fired when a user opens the NestBot home tab in Slack. The handler calls `client.views_publish()` to render a personalised home view using the `app_home_opened.jinja` template combined with a shared header block.
+
+### `app_mention`
+
+**File:** `backend/apps/slack/events/app_mention.py`
+
+Fired when a user mentions `@NestBot` in a channel. The handler:
+
+1. Checks whether the NestBot AI assistant is enabled for that channel (`Conversation.is_nest_bot_assistant_enabled`).
+2. Extracts the plain-text query from the Block Kit `rich_text_section` element.
+3. Posts a `⏳ Thinking…` placeholder message in the same thread.
+4. Calls the AI handler (`apps.slack.common.handlers.ai.get_blocks`) to generate a response.
+5. Updates the placeholder message with the AI response.
+
+If the assistant is not enabled for the channel, the event is silently ignored.
+
+### `message` (message posted)
+
+**File:** `backend/apps/slack/events/message_posted.py`
+
+Fired when a new message is posted in a channel the bot has joined. The handler:
+
+1. Ignores bot messages, messages with subtypes, and thread replies.
+2. Looks up the `Conversation` object for the channel and checks `is_nest_bot_assistant_enabled`.
+3. Runs the message text through `QuestionDetector.is_owasp_question()` to determine whether the message is an OWASP-related question worth answering.
+4. Saves the message to the `Message` model.
+5. Enqueues an AI reply job via Django RQ after a configurable delay (`QUEUE_RESPONSE_TIME_MINUTES`), giving human respondents time to answer first.
+
+### `member_joined_channel`
+
+**Directory:** `backend/apps/slack/events/member_joined_channel/`
+
+Fired when any user joins a channel the bot monitors. NestBot uses [matchers](https://slack.dev/bolt-python/concepts/event-listening) to route the event to different handlers based on which channel was joined:
+
+| File | Channel | Behaviour |
+|---|---|---|
+| `gsoc.py` | `#gsoc` | Sends a DM with GSoC onboarding info and an ephemeral welcome message in the channel. |
+| `contribute.py` | `#contribute` | Sends a DM with contribution guidance. |
+| `project_nest.py` | `#project-nest` | Sends a DM welcoming the user to the OWASP Nest project. |
+| `catch_all.py` | All other channels | Acknowledges the event without sending any message. |
+
+The `Gsoc` handler demonstrates the pattern: it sets `matchers` to `[lambda event: event["channel"] == OWASP_GSOC_CHANNEL_ID.lstrip("#")]` so Bolt only routes matching events to it.
+
+### `team_join`
+
+**File:** `backend/apps/slack/events/team_join.py`
+
+Fired when a user joins the OWASP Slack workspace for the first time. The handler sends a welcome DM that includes links to key channels: `#appsec`, `#ask-owasp`, `#community`, `#contribute`, `#gsoc`, `#jobs`, `#leaders`, `#mentors`, and several project channels. The list of channel IDs is injected into the Jinja2 template context.
+
+<Note>
+Unlike most other event handlers, `TeamJoin.get_user_id()` extracts the user ID from `event["user"]["id"]` rather than `event["user"]`, because the `team_join` payload includes a full user object.
+</Note>
+
+### `url_verification`
+
+**File:** `backend/apps/slack/events/url_verification.py`
+
+Handles the one-time URL verification challenge Slack sends when you first configure or update the events endpoint. The handler returns `event["challenge"]` directly.
+
+## Subscribed events (MANIFEST.yaml)
+
+The following events are declared in `backend/apps/slack/MANIFEST.yaml`:
+
+```yaml
+settings:
+  event_subscriptions:
+    bot_events:
+      - app_home_opened
+      - app_mention
+      - member_joined_channel
+      - message.channels
+      - team_join
+    user_events:
+      - member_joined_channel
+      - team_join
+```
+
+## Adding a new event handler
+
+<Steps>
+  <Step title="Create the handler file">
+    Add a new file under `backend/apps/slack/events/`, for example `my_event.py`.
+  </Step>
+  <Step title="Define the handler class">
+    Inherit from `EventBase` and set `event_type` to the Slack event name. Override `get_context()` to provide template variables, and optionally override `handle_event()` for custom dispatch logic.
+
+    ```python
+    from apps.slack.events.event import EventBase
+
+    class MyEvent(EventBase):
+        event_type = "some_event_type"
+
+        def get_context(self, event):
+            return {
+                **super().get_context(event),
+                "CUSTOM_VAR": "value",
+            }
+    ```
+  </Step>
+  <Step title="Create a Jinja2 template">
+    Add `backend/apps/slack/templates/events/my_event.jinja` with the Block Kit message content.
+  </Step>
+  <Step title="Subscribe to the event in MANIFEST.yaml">
+    Add the event name to `bot_events` (or `user_events`) in `backend/apps/slack/MANIFEST.yaml`, then reinstall the Slack app to apply the change.
+  </Step>
+</Steps>

@@ -1,0 +1,348 @@
+---
+title: "REST API"
+description: "Reference for all REST v0 endpoints exposed by the OWASP Nest backend."
+---
+
+The REST API v0 is built with [Django Ninja](https://django-ninja.dev/) and served at `/api/v0/`. It is the primary integration point for external consumers and official SDKs.
+
+## Base URL
+
+```
+https://nest.owasp.dev/api/v0/
+```
+
+The interactive Swagger documentation is available at `/api/v0/docs` and the raw OpenAPI schema at `/api/v0/openapi.json`.
+
+## Authentication
+
+All endpoints require an API key passed in the `X-Api-Key` request header.
+
+```bash
+curl https://nest.owasp.dev/api/v0/projects/ \
+  -H "X-Api-Key: your-api-key"
+```
+
+<Note>
+  Authentication is disabled in `Local` environments. You can call the API without a key when running the stack with `DJANGO_CONFIGURATION=Local`.
+</Note>
+
+## Pagination
+
+All list endpoints return paginated responses. Pass `page` and `page_size` as query parameters.
+
+| Parameter | Type | Default | Max | Description |
+|---|---|---|---|---|
+| `page` | integer | `1` | — | Page number (1-indexed) |
+| `page_size` | integer | `100` | `100` | Items per page |
+
+Paginated responses have the following envelope:
+
+```json
+{
+  "current_page": 1,
+  "has_next": true,
+  "has_previous": false,
+  "items": [...],
+  "total_count": 540,
+  "total_pages": 6
+}
+```
+
+## Endpoints
+
+### Chapters
+
+<AccordionGroup>
+  <Accordion title="GET /api/v0/chapters">
+    Retrieve a paginated list of active OWASP chapters.
+
+    **Query parameters**
+
+    | Parameter | Type | Description |
+    |---|---|---|
+    | `country` | string | Filter by country name |
+    | `ordering` | string | Sort by `created_at`, `-created_at`, `updated_at`, `-updated_at`, `latitude`, `-latitude`, `longitude`, `-longitude` |
+
+    **Response schema (item)**
+
+    | Field | Type | Description |
+    |---|---|---|
+    | `key` | string | Unique chapter key (e.g., `www-chapter-london`) |
+    | `name` | string | Chapter display name |
+    | `latitude` | float \| null | Geographic latitude |
+    | `longitude` | float \| null | Geographic longitude |
+    | `created_at` | datetime | Creation timestamp |
+    | `updated_at` | datetime | Last update timestamp |
+  </Accordion>
+  <Accordion title="GET /api/v0/chapters/{chapter_id}">
+    Retrieve details for a single chapter.
+
+    **Path parameters**
+
+    | Parameter | Example | Description |
+    |---|---|---|
+    | `chapter_id` | `London` | Chapter name or full key (`www-chapter-london`) |
+
+    **Additional response fields**
+
+    | Field | Type | Description |
+    |---|---|---|
+    | `country` | string | Country name |
+    | `region` | string | Region name |
+    | `leaders` | array | List of `{ key, name }` leader objects |
+  </Accordion>
+</AccordionGroup>
+
+### Committees
+
+```
+GET /api/v0/committees
+GET /api/v0/committees/{committee_id}
+```
+
+Returns paginated OWASP committees.
+
+### Events
+
+```
+GET /api/v0/events
+GET /api/v0/events/{event_id}
+```
+
+Returns paginated OWASP events.
+
+### Issues
+
+<AccordionGroup>
+  <Accordion title="GET /api/v0/issues">
+    Retrieve a paginated list of GitHub issues.
+
+    **Query parameters**
+
+    | Parameter | Type | Description |
+    |---|---|---|
+    | `organization` | string | Filter by GitHub organization login (e.g., `OWASP`) |
+    | `repository` | string | Filter by repository name (e.g., `Nest`) |
+    | `state` | string | Filter by issue state (`open`, `closed`) |
+    | `ordering` | string | Sort by `created_at`, `-created_at`, `updated_at`, `-updated_at` |
+
+    **Response schema (item)**
+
+    | Field | Type | Description |
+    |---|---|---|
+    | `title` | string | Issue title |
+    | `url` | string | GitHub issue URL |
+    | `state` | string | Issue state |
+    | `created_at` | datetime | Creation timestamp |
+    | `updated_at` | datetime | Last update timestamp |
+  </Accordion>
+  <Accordion title="GET /api/v0/issues/{organization_id}/{repository_id}/{issue_id}">
+    Retrieve a specific GitHub issue.
+
+    **Path parameters**
+
+    | Parameter | Example | Description |
+    |---|---|---|
+    | `organization_id` | `OWASP` | GitHub organization login |
+    | `repository_id` | `Nest` | Repository name |
+    | `issue_id` | `1234` | Issue number |
+
+    **Additional response fields**
+
+    | Field | Type | Description |
+    |---|---|---|
+    | `body` | string | Issue body (Markdown) |
+  </Accordion>
+</AccordionGroup>
+
+### Labels
+
+```
+GET /api/v0/labels
+```
+
+Returns a paginated list of GitHub labels.
+
+### Members
+
+```
+GET /api/v0/members
+GET /api/v0/members/{member_id}
+```
+
+Returns paginated GitHub users associated with OWASP.
+
+### Milestones
+
+```
+GET /api/v0/milestones
+GET /api/v0/milestones/{milestone_id}
+```
+
+Returns paginated GitHub milestones.
+
+### Organizations
+
+```
+GET /api/v0/organizations
+GET /api/v0/organizations/{organization_id}
+```
+
+Returns paginated GitHub organizations.
+
+### Projects
+
+<AccordionGroup>
+  <Accordion title="GET /api/v0/projects">
+    Retrieve a paginated list of active OWASP projects.
+
+    **Query parameters**
+
+    | Parameter | Type | Description |
+    |---|---|---|
+    | `level` | string | Filter by project level (`flagship`, `production`, `incubator`, `lab`, `demo`) |
+    | `type` | string (multi) | Filter by project type. Accepts multiple values. |
+    | `q` | string | Structured search query (e.g., `name:security stars:>100`) |
+    | `ordering` | string | Sort by `created_at`, `-created_at`, `updated_at`, `-updated_at` |
+
+    **Response schema (item)**
+
+    | Field | Type | Description |
+    |---|---|---|
+    | `key` | string | Unique project key (e.g., `www-project-nest`) |
+    | `name` | string | Project display name |
+    | `level` | string | Project maturity level |
+    | `type` | string | Project type |
+    | `created_at` | datetime | Creation timestamp |
+    | `updated_at` | datetime | Last update timestamp |
+  </Accordion>
+  <Accordion title="GET /api/v0/projects/{project_id}">
+    Retrieve details for a single project.
+
+    **Path parameters**
+
+    | Parameter | Example | Description |
+    |---|---|---|
+    | `project_id` | `Nest` | Project name or full key (`www-project-nest`) |
+
+    **Additional response fields**
+
+    | Field | Type | Description |
+    |---|---|---|
+    | `description` | string | Project description |
+    | `leaders` | array | List of `{ key, name }` leader objects |
+  </Accordion>
+</AccordionGroup>
+
+### Releases
+
+```
+GET /api/v0/releases
+GET /api/v0/releases/{release_id}
+```
+
+Returns paginated GitHub releases.
+
+### Repositories
+
+```
+GET /api/v0/repositories
+GET /api/v0/repositories/{repository_id}
+```
+
+Returns paginated GitHub repositories.
+
+### Snapshots
+
+<AccordionGroup>
+  <Accordion title="GET /api/v0/snapshots">
+    Retrieve a paginated list of completed community snapshots.
+
+    **Response schema (item)**
+
+    | Field | Type | Description |
+    |---|---|---|
+    | `key` | string | Snapshot key (e.g., `2025-02`) |
+    | `title` | string | Snapshot title |
+    | `start_at` | datetime | Start of the snapshot period |
+    | `end_at` | datetime | End of the snapshot period |
+    | `created_at` | datetime | Creation timestamp |
+    | `updated_at` | datetime | Last update timestamp |
+  </Accordion>
+  <Accordion title="GET /api/v0/snapshots/{snapshot_id}">
+    Retrieve details and aggregate counts for a single snapshot.
+
+    **Additional response fields**
+
+    | Field | Type | Description |
+    |---|---|---|
+    | `new_chapters_count` | integer | New chapters in this snapshot |
+    | `new_issues_count` | integer | New issues in this snapshot |
+    | `new_projects_count` | integer | New projects in this snapshot |
+    | `new_releases_count` | integer | New releases in this snapshot |
+    | `new_users_count` | integer | New users in this snapshot |
+  </Accordion>
+  <Accordion title="Snapshot sub-resources">
+    Each snapshot exposes paginated sub-resource lists:
+
+    ```
+    GET /api/v0/snapshots/{snapshot_id}/chapters/
+    GET /api/v0/snapshots/{snapshot_id}/issues/
+    GET /api/v0/snapshots/{snapshot_id}/members/
+    GET /api/v0/snapshots/{snapshot_id}/projects/
+    GET /api/v0/snapshots/{snapshot_id}/releases/
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Sponsors
+
+```
+GET /api/v0/sponsors
+GET /api/v0/sponsors/{sponsor_id}
+```
+
+Returns paginated OWASP sponsors.
+
+### Structured search
+
+```
+POST /api/v0/structured-search
+```
+
+Accepts a structured query body to filter resources using field-specific operators. See the endpoint's OpenAPI schema for the full request body format.
+
+## Example: fetch projects
+
+```bash
+curl "https://nest.owasp.dev/api/v0/projects/?level=flagship&page_size=5" \
+  -H "X-Api-Key: your-api-key"
+```
+
+```json
+{
+  "current_page": 1,
+  "has_next": true,
+  "has_previous": false,
+  "items": [
+    {
+      "key": "www-project-zap",
+      "name": "ZAP",
+      "level": "flagship",
+      "type": "tool",
+      "created_at": "2024-01-15T10:00:00Z",
+      "updated_at": "2025-03-01T08:30:00Z"
+    }
+  ],
+  "total_count": 24,
+  "total_pages": 5
+}
+```
+
+## SDK compatibility requirements
+
+<Warning>
+  When adding or modifying endpoints, always assign a **unique `operationId`** in the `@router.get` or `@router.post` decorator. Duplicate `operationId`s break SDK generation.
+
+  The authentication class in `apps/api/rest/v0/__init__.py` **must remain named `ApiKey`**. Renaming it changes the generated `api_key` parameter name in all SDKs.
+</Warning>

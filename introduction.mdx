@@ -1,5 +1,5 @@
 ---
-title: "OWASP Nest"
+title: "Introduction"
 description: "Your gateway to OWASP — discover projects, find contribution opportunities, and engage with the global security community."
 ---
 
@@ -7,14 +7,16 @@ description: "Your gateway to OWASP — discover projects, find contribution opp
 
 OWASP Nest is a comprehensive, community-first platform that serves as the central hub for the OWASP ecosystem. Whether you're a seasoned security researcher, a developer looking to contribute, or a student exploring open-source opportunities, Nest helps you discover what matters and take action.
 
+The platform aggregates data from OWASP's GitHub organization, chapters, projects, and community programs — presenting it through a clean, searchable interface and a powerful Slack bot (NestBot).
+
 <CardGroup cols={2}>
-  <Card title="Get started" icon="rocket" href="/quickstart">
-    Start using OWASP Nest in minutes
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get up and running with OWASP Nest in minutes
   </Card>
   <Card title="Architecture" icon="sitemap" href="/architecture">
     Understand the full-stack architecture
   </Card>
-  <Card title="Explore projects" icon="folder-open" href="/features/projects">
+  <Card title="Explore Projects" icon="folder-open" href="/features/projects">
     Discover and filter OWASP projects
   </Card>
   <Card title="NestBot" icon="robot" href="/nestbot/overview">
@@ -25,29 +27,29 @@ OWASP Nest is a comprehensive, community-first platform that serves as the centr
 ## Key features
 
 <CardGroup cols={2}>
-  <Card title="Project discovery" icon="magnifying-glass">
+  <Card title="Project Discovery" icon="magnifying-glass">
     Search and filter 300+ OWASP projects by keywords, tags, activity level, and contributor preferences using Algolia-powered search.
   </Card>
-  <Card title="Contribution opportunities" icon="hand-holding-heart">
+  <Card title="Contribution Opportunities" icon="hand-holding-heart">
     Find open issues and contribution opportunities across OWASP projects that match your skills and interests.
   </Card>
-  <Card title="Chapter map" icon="map-location-dot">
+  <Card title="Chapter Map" icon="map-location-dot">
     Explore OWASP chapters around the world with a geographic proximity map to find your local community.
   </Card>
-  <Card title="AI-generated insights" icon="brain">
+  <Card title="AI-Generated Insights" icon="brain">
     Get AI-powered summaries of projects and actionable guidance for tackling open issues using LangChain and OpenAI.
   </Card>
   <Card title="NestBot for Slack" icon="slack">
     Use slash commands in any OWASP Slack channel to search projects, find chapters, explore GSoC opportunities, and more.
   </Card>
-  <Card title="Mentorship and GSoC" icon="graduation-cap">
+  <Card title="Mentorship & GSoC" icon="graduation-cap">
     Explore Google Summer of Code opportunities and connect with mentors across OWASP projects.
   </Card>
 </CardGroup>
 
 ## Technology stack
 
-OWASP Nest is a full-stack application built with modern, proven technologies:
+OWASP Nest is a full-stack application built with proven, modern technologies:
 
 | Layer | Technology |
 |-------|-----------|
@@ -59,7 +61,7 @@ OWASP Nest is a full-stack application built with modern, proven technologies:
 | **Search** | Algolia |
 | **Database** | PostgreSQL with pgvector |
 | **Caching** | Redis |
-| **Task queue** | Django RQ |
+| **Task Queue** | Django RQ |
 | **AI/ML** | LangChain, LangGraph, OpenAI |
 | **Slack** | Slack Bolt for Python |
 | **Infrastructure** | Docker, Terraform, AWS |
@@ -71,14 +73,7 @@ Nest exposes two APIs for programmatic access:
 - **REST API (v0)** at `/api/v0/` — OpenAPI-documented, suitable for integrations and SDK generation
 - **GraphQL API** at `/graphql/` — Used internally by the frontend, available for advanced queries
 
-<CardGroup cols={2}>
-  <Card title="REST API" icon="code" href="/backend/api/rest">
-    Browse REST endpoints and authentication
-  </Card>
-  <Card title="GraphQL API" icon="diagram-project" href="/backend/api/graphql">
-    Explore the GraphQL schema
-  </Card>
-</CardGroup>
+Official SDKs are available for [Go](https://github.com/owasp/nest-sdk), [Python](https://github.com/owasp/nest-sdk-python), and [TypeScript](https://github.com/OWASP/nest-sdk-typescript).
 
 ## Community
 
@@ -90,5 +85,5 @@ OWASP Nest is an active open-source project with a welcoming community:
 - **LinkedIn**: [OWASP Nest Group](https://www.linkedin.com/groups/14656108/)
 
 <Note>
-  OWASP Nest is licensed under the MIT License. All contributions are welcome — see the [contributing guidelines](/contributing/guidelines) to get started.
+  OWASP Nest is licensed under the MIT License. All contributions are welcome — see the [Contributing Guidelines](/contributing/guidelines) to get started.
 </Note>

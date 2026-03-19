@@ -1,0 +1,72 @@
+---
+title: "Django apps"
+description: "Overview of each Django application in the OWASP Nest backend."
+---
+
+The backend is organized as a collection of Django applications under `backend/apps/`. Each app owns its models, migrations, admin configuration, management commands, and API definitions.
+
+## App reference
+
+<CardGroup cols={2}>
+  <Card title="ai" icon="brain">
+    AI agent built with LangGraph, LangChain, and OpenAI. Provides agentic RAG (retrieval-augmented generation) over OWASP content and generates AI-enriched context for projects, chapters, committees, events, repositories, and Slack messages.
+  </Card>
+  <Card title="api" icon="plug">
+    Hosts the public REST v0 API (Django Ninja) and the internal GraphQL API (Strawberry). All REST routers and GraphQL schema types are registered here.
+  </Card>
+  <Card title="common" icon="toolbox">
+    Shared utilities used across multiple apps: middleware (CSRF fallback, null-character blocking), cache decorators, search query parser, and other helpers.
+  </Card>
+  <Card title="core" icon="cube">
+    Core base classes and foundational models. Provides abstract model mixins and other building blocks used by every other app.
+  </Card>
+  <Card title="github" icon="github">
+    GitHub integration layer. Stores and syncs GitHub organizations, repositories, issues, pull requests, commits, labels, milestones, releases, and users via the PyGitHub library.
+  </Card>
+  <Card title="mentorship" icon="users">
+    Mentorship program models covering programs, modules, and mentor/mentee relationships. Exposes GraphQL queries and mutations for the frontend mentorship UI.
+  </Card>
+  <Card title="nest" icon="house">
+    Nest-specific models including the custom `User` model (referenced by `AUTH_USER_MODEL`) and API key management.
+  </Card>
+  <Card title="owasp" icon="shield">
+    Core OWASP data models: `Project`, `Chapter`, `Committee`, `Event`, `Snapshot`, `Sponsor`, and supporting entities such as board members and member profiles. Management commands in this app drive the data pipeline (scraping, aggregation, enrichment).
+  </Card>
+  <Card title="sitemap" icon="map">
+    XML sitemap generation. Produces `sitemap.xml` for all public OWASP entities to support search-engine indexing.
+  </Card>
+  <Card title="slack" icon="slack">
+    NestBot Slack integration built with `slack-bolt`. Handles slash commands, events, and interactive messages from the OWASP Slack workspace.
+  </Card>
+</CardGroup>
+
+## App structure conventions
+
+Each app follows a consistent layout:
+
+```
+apps/<name>/
+├── admin.py              # Django admin registration
+├── apps.py               # AppConfig
+├── api/
+│   └── internal/         # GraphQL nodes, queries, and mutations
+├── management/
+│   └── commands/         # Django management commands
+├── migrations/           # Database migrations
+├── models/               # Django ORM models
+└── tests/                # Unit and integration tests
+```
+
+<Note>
+  The `api/` sub-directory appears in apps that expose GraphQL types (e.g., `owasp`, `github`, `mentorship`, `nest`). REST endpoints live exclusively under `apps/api/rest/`.
+</Note>
+
+## Key models by app
+
+| App | Notable models |
+|---|---|
+| `owasp` | `Project`, `Chapter`, `Committee`, `Event`, `Snapshot`, `Sponsor`, `MemberProfile` |
+| `github` | `Organization`, `Repository`, `Issue`, `PullRequest`, `Release`, `User`, `Label`, `Milestone` |
+| `nest` | `User`, `ApiKey` |
+| `mentorship` | `Program`, `Module` |
+| `ai` | Chunk and context models for each entity type |

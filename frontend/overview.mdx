@@ -1,0 +1,70 @@
+---
+title: "Frontend overview"
+description: "An overview of the OWASP Nest Next.js frontend: tech stack, directory structure, and testing approach."
+---
+
+The OWASP Nest frontend is a modern web application built with [Next.js](https://nextjs.org/). It serves as the primary user interface for discovering OWASP projects, chapters, members, and contribution opportunities.
+
+## Tech stack
+
+| Component | Technology |
+| --- | --- |
+| **Framework** | Next.js 16.x (React 19) |
+| **Language** | TypeScript |
+| **Styling** | TailwindCSS 4.x |
+| **UI library** | HeroUI |
+| **Data fetching** | Apollo Client (GraphQL) |
+| **Mapping** | Leaflet / React Leaflet |
+| **Testing** | Jest (unit/a11y), Playwright (e2e) |
+
+## Directory structure
+
+All frontend source lives under the `frontend/` directory in the repository root.
+
+```
+frontend/
+├── src/
+│   ├── app/          # Next.js App Router pages and layouts
+│   ├── components/   # Reusable UI components
+│   ├── hooks/        # Custom React hooks
+│   ├── types/        # TypeScript types (including GraphQL generated types)
+│   └── server/       # Server-side utilities and data fetching
+├── public/           # Static assets (images, icons, fonts)
+├── __tests__/        # Automated tests (unit, a11y, e2e)
+├── graphql-codegen.ts
+├── next.config.ts
+├── tailwind.config.mjs
+└── package.json
+```
+
+### Key directories
+
+<CardGroup cols={2}>
+  <Card title="src/app" icon="layout-grid">
+    Next.js App Router pages and nested layouts. Each subdirectory maps to a URL route. The root `layout.tsx` wraps all pages with the global header, footer, and providers.
+  </Card>
+  <Card title="src/components" icon="puzzle">
+    Over 80 shared UI components including charts, maps, cards, modals, search, navigation, and skeleton loaders. Components use HeroUI and TailwindCSS.
+  </Card>
+  <Card title="src/hooks" icon="code">
+    Custom React hooks for session management, search, breadcrumbs, modal state, mutations, and mobile detection.
+  </Card>
+  <Card title="src/types" icon="file-code">
+    TypeScript type definitions. The `__generated__/` subdirectory contains types auto-generated from the backend GraphQL schema — do not edit these files manually.
+  </Card>
+</CardGroup>
+
+## Testing
+
+The frontend uses two testing layers:
+
+- **Unit and accessibility tests** — Jest with `@testing-library/react` and `jest-axe`. Run with `pnpm run test:unit` or `pnpm run test:a11y`.
+- **End-to-end tests** — Playwright. Run with `pnpm run test:e2e`.
+
+All tests live in the `__tests__/` directory at the root of the `frontend/` package.
+
+## Next steps
+
+<Card title="Local setup" icon="terminal" href="/frontend/local-setup">
+  Set up the frontend on your machine using Docker or pnpm directly.
+</Card>

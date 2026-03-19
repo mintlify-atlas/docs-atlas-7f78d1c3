@@ -1,0 +1,149 @@
+---
+title: "Contributing guidelines"
+description: "How to contribute to OWASP Nest, from opening an issue to getting your pull request merged."
+---
+
+OWASP Nest is an open-source community project and welcomes contributions of all kinds. This page explains the contribution workflow and the code quality standards you need to meet before opening a pull request.
+
+## Ways to contribute
+
+<CardGroup cols={2}>
+  <Card title="Code" icon="code">
+    Fix bugs, implement features, or improve performance. Start with issues labelled `good first issue` if you're new to the project.
+  </Card>
+  <Card title="Documentation" icon="book">
+    Improve these docs, add missing guides, or fix typos and inaccuracies.
+  </Card>
+  <Card title="Code review" icon="magnifying-glass">
+    Review open pull requests and leave constructive feedback.
+  </Card>
+  <Card title="Issue reporting" icon="circle-exclamation">
+    Report bugs, request features, or ask questions in the [GitHub issue tracker](https://github.com/OWASP/Nest/issues).
+  </Card>
+  <Card title="Community engagement" icon="users">
+    Answer questions in OWASP Slack, help triage issues, or mentor new contributors.
+  </Card>
+  <Card title="Security" icon="shield">
+    Report security vulnerabilities responsibly using the GitHub Security Advisory feature.
+  </Card>
+</CardGroup>
+
+## Contribution workflow
+
+<Steps>
+  <Step title="Find or create an issue">
+    Browse [open issues](https://github.com/OWASP/Nest/issues) or open a new one. Ask a maintainer to assign the issue to you before starting work — pull requests submitted without an assignment are automatically closed.
+  </Step>
+  <Step title="Fork the repository">
+    Fork [https://github.com/OWASP/Nest](https://github.com/OWASP/Nest) and clone your fork locally:
+
+    ```bash
+    git clone https://github.com/<your-account>/Nest.git
+    ```
+  </Step>
+  <Step title="Keep your fork in sync">
+    Add the upstream remote if you haven't already:
+
+    ```bash
+    git remote add upstream https://github.com/OWASP/Nest.git
+    ```
+
+    Before starting work on any new issue, sync your local `main` branch:
+
+    ```bash
+    git checkout main
+    git fetch upstream
+    git merge upstream/main
+    ```
+  </Step>
+  <Step title="Create a feature branch">
+    Always work on a dedicated branch, never directly on `main`:
+
+    ```bash
+    git checkout -b feature/my-feature-name
+    ```
+  </Step>
+  <Step title="Make your changes">
+    Implement your fix or feature. Add tests for any new functionality and make sure existing tests still pass.
+  </Step>
+  <Step title="Run checks and tests locally">
+    Run the full check-and-test suite before pushing:
+
+    ```bash
+    make check-test
+    ```
+
+    This runs linters, static analysis, and the test suite for both backend and frontend. **Your pull request will not be reviewed until all automated checks pass.**
+  </Step>
+  <Step title="Commit and push">
+    Write a meaningful commit message:
+
+    ```bash
+    git commit -m "Add feature: short description"
+    git push origin feature/my-feature-name
+    ```
+  </Step>
+  <Step title="Open a pull request">
+    Submit a pull request to the `main` branch of the upstream repository. Open it as a **draft** initially. Wait for automated checks (CodeRabbit, SonarQube, GitHub Advanced Security) to complete and resolve all suggestions before marking it ready for review.
+  </Step>
+  <Step title="Address review feedback">
+    Address feedback from maintainers. Mark the PR as a draft again while you make changes, then re-mark it as ready when done. Once CI/CD passes and maintainers approve, your PR will be merged.
+  </Step>
+</Steps>
+
+## Coding standards
+
+### Backend (Python)
+
+The backend enforces code quality with [ruff](https://docs.astral.sh/ruff/) for linting and formatting. Run the backend checks with:
+
+```bash
+make check-backend
+```
+
+Key conventions:
+- Follow [PEP 8](https://peps.python.org/pep-0008/) style.
+- Write docstrings for all public classes and methods.
+- Keep functions focused and testable.
+- Use type hints throughout.
+
+### Frontend (TypeScript)
+
+The frontend uses [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/) for linting and formatting. Run the frontend checks with:
+
+```bash
+make check-frontend
+```
+
+Key conventions:
+- Use TypeScript strictly — avoid `any` types.
+- Follow the existing component structure in `frontend/src/components/`.
+- Use Tailwind CSS utility classes for styling.
+
+### Pre-commit hooks
+
+The repository ships with pre-commit hooks that run linters and formatters automatically before every commit. Install them after cloning:
+
+```bash
+pre-commit install
+```
+
+The hooks catch common issues early, before they reach CI. If a hook fails, fix the reported issue and stage the corrected files before committing again.
+
+## Automated code review tools
+
+Every pull request is reviewed by:
+
+- **CodeRabbit** — AI-powered code review.
+- **SonarQube** — static analysis for bugs, vulnerabilities, and code smells.
+- **GitHub Advanced Security** — secret scanning and dependency vulnerability checks.
+
+You are responsible for addressing or resolving all suggestions from these tools before requesting a human review. If a suggestion is a false positive, mark it as resolved with a brief explanation.
+
+## Running security scans locally
+
+```bash
+make security-scan
+```
+
+This runs [Semgrep](https://semgrep.dev/) and [Trivy](https://trivy.dev/) locally and prints findings to the terminal. Use `# NOSEMGREP` with a short comment to suppress confirmed false positives.

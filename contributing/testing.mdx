@@ -1,0 +1,182 @@
+---
+title: "Testing"
+description: "How to run backend and frontend tests locally and understand OWASP Nest's coverage requirements."
+---
+
+Nest has three test suites: a backend test suite powered by pytest, and a frontend test suite with both unit/accessibility tests (Jest) and end-to-end tests (Playwright). All suites run automatically in CI against every pull request.
+
+<Warning>
+Your pull request will not be merged if it fails any test checks. Run `make check-test` locally before pushing.
+</Warning>
+
+## Running all tests
+
+```bash
+make test
+```
+
+This runs the full backend and frontend test suites and verifies that both coverage thresholds are met.
+
+## Backend tests
+
+### Stack
+
+| Tool | Purpose |
+|---|---|
+| [pytest](https://docs.pytest.org/) | Test runner |
+| [pytest-django](https://pytest-django.readthedocs.io/) | Django integration for pytest |
+| [pytest-mock](https://pytest-mock.readthedocs.io/) | `mocker` fixture for mocking |
+| [pytest-cov](https://pytest-cov.readthedocs.io/) | Coverage measurement |
+| [pytest-xdist](https://pytest-xdist.readthedocs.io/) | Parallel test execution |
+
+### Running backend tests
+
+```bash
+make test-backend
+```
+
+This runs the full backend suite with the configuration from `backend/pyproject.toml`, including parallel execution (`--numprocesses=auto`) and coverage reporting.
+
+### Coverage requirement
+
+The backend enforces a **95% minimum coverage threshold** (`--cov-fail-under=95`). Coverage is measured with branch coverage enabled and excludes migrations, `__init__.py` files, settings, and test files themselves.
+
+A coverage report is printed to the terminal and also written to `coverage.xml`. If your changes reduce coverage below 95%, the build fails.
+
+To check coverage for a specific module:
+
+```bash
+# From inside the backend container or virtualenv
+pytest --cov=apps/slack --cov-report=term-missing
+```
+
+### Test organisation
+
+Backend tests live under `backend/tests/apps/` and mirror the `backend/apps/` directory structure:
+
+```
+backend/tests/
+├── conftest.py
+├── apps/
+│   ├── ai/
+│   ├── api/
+│   ├── common/
+│   ├── github/
+│   ├── owasp/
+│   ├── slack/
+│   └── ...
+└── fuzz/
+```
+
+### Writing backend tests
+
+```python
+import pytest
+
+@pytest.mark.django_db
+def test_my_feature(mocker):
+    mock_client = mocker.patch("apps.slack.apps.SlackConfig.app")
+    # ... your test logic
+    assert result == expected
+```
+
+## Frontend tests
+
+### Stack
+
+| Tool | Purpose |
+|---|---|
+| [Jest](https://jestjs.io/) | Unit and accessibility test runner |
+| [Playwright](https://playwright.dev/) | End-to-end browser tests |
+| [schemathesis](https://schemathesis.readthedocs.io/) | API fuzz testing |
+
+### Unit tests
+
+Unit tests live under `frontend/__tests__/unit/` and cover components, hooks, utilities, and page logic.
+
+```bash
+pnpm run test:unit
+```
+
+The Jest configuration in `frontend/jest.config.ts` enforces a minimum coverage threshold. Ensure your changes do not reduce overall frontend coverage.
+
+### Accessibility tests
+
+Accessibility (a11y) tests live under `frontend/__tests__/a11y/` and verify that pages and components meet WCAG standards.
+
+```bash
+pnpm run test:a11y
+```
+
+### End-to-end tests
+
+Playwright e2e tests live under `frontend/__tests__/e2e/` and test full user journeys in a real browser.
+
+To run e2e tests (this starts the full backend stack automatically):
+
+```bash
+make test-frontend-e2e
+```
+
+To run without re-initialising the database (useful when containers are already running):
+
+```bash
+make test-frontend-e2e-no-init
+```
+
+To debug e2e tests in Playwright UI mode:
+
+```bash
+make test-frontend-e2e-ui
+```
+
+The Playwright UI is accessible at `http://localhost:3800`.
+
+## Fuzz tests
+
+Nest uses [schemathesis](https://schemathesis.readthedocs.io/) to fuzz-test the REST API against its OpenAPI schema. Fuzz tests live under `backend/tests/fuzz/`.
+
+```bash
+make test-fuzz
+```
+
+This starts the database and backend containers, runs migrations and loads test data, executes the fuzz suite, and then cleans up.
+
+For debugging, start the fuzz backend separately:
+
+```bash
+make run-backend-fuzz
+```
+
+Then load data in another terminal:
+
+```bash
+make load-data-fuzz
+```
+
+## Security scanning
+
+Run [Semgrep](https://semgrep.dev/) and [Trivy](https://trivy.dev/) scans locally before pushing:
+
+```bash
+make security-scan
+```
+
+You can also run the code and image scans separately:
+
+```bash
+make security-scan-code
+make security-scan-images
+```
+
+Use `# NOSEMGREP` comments with an explanation to suppress confirmed false positives.
+
+## Adding tests for new functionality
+
+<Tip>
+Always add tests when implementing new features or fixing bugs. A PR that introduces code without corresponding tests is unlikely to be approved, and any change that drops overall coverage below the threshold will fail CI.
+</Tip>
+
+- **Backend:** add test files under `backend/tests/apps/<app_name>/` mirroring the source structure.
+- **Frontend unit:** add test files under `frontend/__tests__/unit/` next to the component or hook being tested.
+- **Frontend a11y:** add a11y test files under `frontend/__tests__/a11y/` for any new pages or interactive components.

@@ -1,0 +1,103 @@
+---
+title: "Local setup"
+description: "How to run the OWASP Nest frontend locally using Docker or pnpm."
+---
+
+## Prerequisites
+
+- [Node.js](https://nodejs.org/) 24 or later
+- [pnpm](https://pnpm.io/) (the project uses pnpm 10.x — see `packageManager` in `package.json`)
+- [Docker](https://www.docker.com/) and Docker Compose (for the recommended Docker approach)
+
+<Tip>
+Using Docker is the preferred approach because it starts all services together — frontend, backend, database, and cache — without requiring you to configure each one individually.
+</Tip>
+
+## Running the frontend
+
+<Tabs>
+  <Tab title="Docker (recommended)">
+    Run all services from the repository root:
+
+    <Steps>
+      <Step title="Clone the repository">
+        ```bash
+        git clone https://github.com/OWASP/Nest.git
+        cd Nest
+        ```
+      </Step>
+      <Step title="Copy the environment file">
+        ```bash
+        cp frontend/.env.example frontend/.env
+        ```
+
+        Edit `frontend/.env` and set at minimum `NEXT_SERVER_GITHUB_CLIENT_ID` and `NEXT_SERVER_GITHUB_CLIENT_SECRET` if you need GitHub authentication. See [Environment variables](/frontend/environment-variables) for details on every variable.
+      </Step>
+      <Step title="Start all services">
+        ```bash
+        docker compose -f docker-compose/local/compose.yaml up
+        ```
+
+        This starts the frontend (Next.js on port 3000), backend (Django), PostgreSQL, and Redis.
+      </Step>
+      <Step title="Open the app">
+        Navigate to [http://localhost:3000](http://localhost:3000) in your browser.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Direct pnpm">
+    Run only the frontend development server without Docker. You still need the backend running for API calls and GraphQL.
+
+    <Steps>
+      <Step title="Install dependencies">
+        From the `frontend/` directory:
+
+        ```bash
+        pnpm install
+        ```
+      </Step>
+      <Step title="Copy the environment file">
+        ```bash
+        cp .env.example .env
+        ```
+
+        Edit `.env` to point `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_GRAPHQL_URL`, and other API variables at your running backend. See [Environment variables](/frontend/environment-variables).
+      </Step>
+      <Step title="Start the dev server">
+        ```bash
+        pnpm run dev
+        ```
+
+        The server starts on [http://localhost:3000](http://localhost:3000) with Turbopack enabled.
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## Key pnpm scripts
+
+All scripts are defined in `frontend/package.json` and run from the `frontend/` directory.
+
+| Task | Command |
+| --- | --- |
+| Start dev server | `pnpm run dev` |
+| Build for production | `pnpm run build` |
+| Lint (with auto-fix) | `pnpm run lint` |
+| Format code | `pnpm run format` |
+| Run unit tests | `pnpm run test:unit` |
+| Run a11y tests | `pnpm run test:a11y` |
+| Run e2e tests | `pnpm run test:e2e` |
+| Generate GraphQL types | `pnpm run graphql-codegen` |
+
+<Note>
+The `graphql-codegen` script requires the backend to be running. See [GraphQL code generation](/frontend/graphql-codegen) for details.
+</Note>
+
+## Node.js version
+
+The `engines` field in `package.json` requires Node.js `^24.0.0`. Use a version manager like [nvm](https://github.com/nvm-sh/nvm) or [fnm](https://github.com/Schniz/fnm) to switch versions easily:
+
+```bash
+nvm install 24
+nvm use 24
+```

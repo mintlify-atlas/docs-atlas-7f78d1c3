@@ -1,0 +1,97 @@
+---
+title: "Task queue"
+description: "How OWASP Nest uses Django RQ and Redis to run background tasks."
+---
+
+## Overview
+
+OWASP Nest uses [Django RQ](https://github.com/rq/django-rq) (Redis Queue) for running background tasks outside the request/response cycle. A dedicated `nest-worker` container processes jobs from the `ai` queue, backed by Redis.
+
+The RQ queue is configured in `settings/base.py`:
+
+```python
+RQ_QUEUES = {
+    "ai": {
+        "HOST": REDIS_HOST,
+        "PORT": 6379,
+        "PASSWORD": REDIS_PASSWORD,
+        "DB": 1,
+        "DEFAULT_TIMEOUT": 300,
+    }
+}
+```
+
+## Background tasks
+
+Long-running data pipeline operations are executed as management commands and are typically triggered via Makefile targets or scheduled jobs in production.
+
+### GitHub data sync
+
+| Command | Description |
+|---|---|
+| `github_update_owasp_organization` | Syncs all repositories and metadata for the OWASP GitHub organization. |
+| `github_update_related_organizations` | Syncs OWASP-related GitHub organizations. |
+| `github_enrich_issues` | Enriches GitHub issues with labels, assignees, and linked pull requests. |
+| `github_update_pull_requests` | Links pull requests to issues using closing keywords. |
+| `github_update_users` | Updates GitHub user profiles. |
+| `github_add_related_repositories` | Discovers and links OWASP-related repositories. |
+
+### OWASP data pipeline
+
+| Command | Description |
+|---|---|
+| `owasp_scrape_chapters` | Scrapes chapter data from the OWASP website. |
+| `owasp_scrape_projects` | Scrapes project data from the OWASP website. |
+| `owasp_scrape_committees` | Scrapes committee data from the OWASP website. |
+| `owasp_enrich_chapters` | Enriches chapter records with additional metadata. |
+| `owasp_enrich_projects` | Enriches project records with additional metadata. |
+| `owasp_enrich_committees` | Enriches committee records. |
+| `owasp_enrich_events` | Enriches event records. |
+| `owasp_aggregate_projects` | Aggregates project statistics. |
+| `owasp_aggregate_entity_contributions` | Aggregates contribution statistics for chapters and projects. |
+| `owasp_aggregate_member_contributions` | Aggregates community member contribution statistics. |
+| `owasp_process_snapshots` | Processes periodic community snapshots. |
+| `owasp_update_project_health_metrics` | Updates project health metric values. |
+| `owasp_update_project_health_scores` | Recalculates project health scores. |
+
+### AI generation
+
+| Command | Description |
+|---|---|
+| `ai_update_project_chunks` | Generates text chunks from project content for vector search. |
+| `ai_update_project_context` | Generates AI context summaries for projects. |
+| `ai_update_chapter_chunks` | Generates text chunks from chapter content. |
+| `ai_update_chapter_context` | Generates AI context summaries for chapters. |
+| `ai_update_repository_chunks` | Generates text chunks from repository content. |
+| `ai_update_repository_context` | Generates AI context summaries for repositories. |
+| `ai_update_slack_message_chunks` | Generates text chunks from Slack messages. |
+| `ai_run_agentic_rag` | Runs the LangGraph agentic RAG pipeline. |
+
+## Triggering tasks locally
+
+All tasks are wrapped as Makefile targets. With the stack running, execute any task from the repository root:
+
+```bash
+# Run the full data sync pipeline
+make sync-data
+
+# Run individual steps
+make github-update-owasp-organization
+make owasp-scrape-projects
+make owasp-enrich-projects
+make index-data
+```
+
+To run a management command directly inside the backend container:
+
+```bash
+docker exec -it nest-backend python manage.py <command_name>
+```
+
+## Monitoring the queue
+
+Django RQ ships with a built-in admin dashboard. After creating a superuser, navigate to `/admin/` and look for the **Django RQ** section to inspect queued, running, and failed jobs.
+
+<Tip>
+  Failed jobs are stored in Redis and can be retried from the Django admin interface without re-running the originating management command.
+</Tip>
