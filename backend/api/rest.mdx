@@ -8,18 +8,18 @@ The REST API v0 is built with [Django Ninja](https://django-ninja.dev/) and serv
 ## Base URL
 
 ```
-https://nest.owasp.dev/api/v0/
+https://nest.owasp.org/api/v0/
 ```
 
 The interactive Swagger documentation is available at `/api/v0/docs` and the raw OpenAPI schema at `/api/v0/openapi.json`.
 
 ## Authentication
 
-All endpoints require an API key passed in the `X-Api-Key` request header.
+All endpoints require an API key passed in the `X-API-Key` request header.
 
 ```bash
-curl https://nest.owasp.dev/api/v0/projects/ \
-  -H "X-Api-Key: your-api-key"
+curl https://nest.owasp.org/api/v0/projects/ \
+  -H "X-API-Key: your-api-key"
 ```
 
 <Note>
@@ -176,10 +176,10 @@ Returns paginated GitHub users associated with OWASP.
 
 ```
 GET /api/v0/milestones
-GET /api/v0/milestones/{milestone_id}
+GET /api/v0/milestones/{organization_id}/{repository_id}/{milestone_id}
 ```
 
-Returns paginated GitHub milestones.
+Returns paginated GitHub milestones. Filtering by `organization` and `repository` query parameters is supported on the list endpoint. The detail endpoint takes the organization login, repository name, and milestone number as path parameters.
 
 ### Organizations
 
@@ -188,7 +188,7 @@ GET /api/v0/organizations
 GET /api/v0/organizations/{organization_id}
 ```
 
-Returns paginated GitHub organizations.
+Returns paginated GitHub organizations affiliated with OWASP.
 
 ### Projects
 
@@ -238,19 +238,19 @@ Returns paginated GitHub organizations.
 
 ```
 GET /api/v0/releases
-GET /api/v0/releases/{release_id}
+GET /api/v0/releases/{organization_id}/{repository_id}/{release_id}
 ```
 
-Returns paginated GitHub releases.
+Returns paginated GitHub releases. Filtering by `organization`, `repository`, and `tag_name` query parameters is supported on the list endpoint. The detail endpoint takes the organization login, repository name, and tag name as path parameters.
 
 ### Repositories
 
 ```
 GET /api/v0/repositories
-GET /api/v0/repositories/{repository_id}
+GET /api/v0/repositories/{organization_id}/{repository_id}
 ```
 
-Returns paginated GitHub repositories.
+Returns paginated GitHub repositories. Filter by `organization_id` query parameter to scope to a specific GitHub organization. The detail endpoint takes the organization login and repository name as path parameters.
 
 ### Snapshots
 
@@ -304,19 +304,27 @@ GET /api/v0/sponsors/{sponsor_id}
 
 Returns paginated OWASP sponsors.
 
-### Structured search
+### Structured search (query syntax)
 
-```
-POST /api/v0/structured-search
-```
+Some endpoints support a structured search query via the `q` query parameter. This uses a field-specific syntax parsed server-side.
 
-Accepts a structured query body to filter resources using field-specific operators. See the endpoint's OpenAPI schema for the full request body format.
+**Example:** `GET /api/v0/projects/?q=name:security stars:>100`
+
+Supported on the **Projects** list endpoint (`name`, `stars`). The query syntax supports:
+
+| Operator | Meaning | Example |
+|---|---|---|
+| `:` | Exact match or `icontains` for strings | `name:nest` |
+| `:>` | Greater than (numeric) | `stars:>500` |
+| `:<` | Less than (numeric) | `stars:<10` |
+| `:>=` | Greater than or equal | `stars:>=100` |
+| `:<=` | Less than or equal | `stars:<=50` |
 
 ## Example: fetch projects
 
 ```bash
-curl "https://nest.owasp.dev/api/v0/projects/?level=flagship&page_size=5" \
-  -H "X-Api-Key: your-api-key"
+curl "https://nest.owasp.org/api/v0/projects/?level=flagship&page_size=5" \
+  -H "X-API-Key: your-api-key"
 ```
 
 ```json

@@ -158,21 +158,9 @@ Variables prefixed with `NEXT_PUBLIC_` are embedded into the client-side JavaScr
 ## Google Tag Manager
 
 <ParamField path="NEXT_PUBLIC_GTM_ID">
-  The unique container ID for Google Tag Manager. Required to enable GTM on the frontend.
+  The Google Analytics measurement ID (used via `@next/third-parties/google`). When set, `GoogleAnalytics` is mounted in the root layout and GTM events are sent for interactions such as search queries.
 
   ```
-  NEXT_PUBLIC_GTM_ID=GTM-XXXXXXX
+  NEXT_PUBLIC_GTM_ID=G-XXXXXXXXXX
   ```
-</ParamField>
-
-<ParamField path="NEXT_PUBLIC_GTM_AUTH">
-  Authentication token for Google Tag Manager. Optional; used when previewing or testing GTM in non-production environments.
-
-  ```
-  NEXT_PUBLIC_GTM_AUTH=XYZabc123
-  ```
-</ParamField>
-
-<ParamField path="NEXT_PUBLIC_GTM_PREVIEW">
-  GTM preview environment identifier. Optional; used alongside `NEXT_PUBLIC_GTM_AUTH` during GTM debugging.
 </ParamField>

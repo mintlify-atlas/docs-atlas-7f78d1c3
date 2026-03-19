@@ -44,27 +44,26 @@ On the **Contribute** page you can:
 - Search by issue title, description, label names, or project name.
 - Results include issues from all active OWASP projects.
 
-## REST API search endpoint
+## Search proxy endpoint
 
-Nest exposes a structured search endpoint via the REST API at `/api/v0/search/` for programmatic access.
+The frontend does not query Algolia directly. Instead, it sends POST requests to the backend's `/idx/` endpoint (configured via `NEXT_PUBLIC_IDX_URL`). The backend proxies these requests to Algolia server-side, so no Algolia API key is needed in the frontend.
 
-```bash
-GET https://nest.owasp.org/api/v0/search/?q=zap&type=projects
+The request body format used by the `fetchAlgoliaData` utility in `src/server/fetchAlgoliaData.ts`:
+
+```json
+{
+  "indexName": "projects",
+  "query": "zap",
+  "page": 0,
+  "hitsPerPage": 25,
+  "facetFilters": ["idx_is_active:true"]
+}
 ```
 
-The endpoint accepts the following query parameters:
-
-| Parameter | Description |
-|---|---|
-| `q` | Search query string |
-| `type` | Content type to search: `projects`, `chapters`, or `issues` |
-| `page` | Page number (1-indexed) |
-| `hitsPerPage` | Number of results per page |
-
-The response mirrors the Algolia response format with `hits`, `nbHits`, `page`, and `nbPages` fields.
+The response includes `hits` (array of matching records) and `nbPages` (total page count).
 
 <Note>
-  The REST API search endpoint proxies the query to Algolia server-side, so you do not need an Algolia API key to use it. Rate limits apply per the standard Nest API terms.
+  This `/idx/` proxy is separate from the public REST API at `/api/v0/`. It is used exclusively by the Nest frontend and is not part of the public API surface.
 </Note>
 
 ## Facets and filters
@@ -78,18 +77,17 @@ Facet values are fetched via GraphQL (`GetChapterCountriesDocument`) so that the
 
 ## Algolia configuration
 
-Search requires Algolia credentials in the backend environment:
+Search requires Algolia credentials in the backend environment. The frontend does not require separate Algolia credentials because all Algolia queries are proxied through the backend.
 
 ```plaintext
 DJANGO_ALGOLIA_APPLICATION_ID=<your-algolia-app-id>
 DJANGO_ALGOLIA_WRITE_API_KEY=<your-algolia-write-api-key>
 ```
 
-The frontend uses a read-only search API key configured separately:
+The frontend only needs the idx proxy URL:
 
 ```plaintext
-NEXT_PUBLIC_ALGOLIA_APP_ID=<your-algolia-app-id>
-NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY=<your-algolia-search-api-key>
+NEXT_PUBLIC_IDX_URL=http://localhost:8000/idx/
 ```
 
 <Tip>
